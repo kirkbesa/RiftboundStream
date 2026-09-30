@@ -1,15 +1,21 @@
 import React, { useState } from 'react'
 import { api } from '../store.js'
-import { ManaCost } from '../mtg.jsx'
+import { ManaCost, mainDeckCount } from '../mtg.jsx'
 
-const PLACEHOLDER = `Paste a decklist — Arena, MTGO, or plain text:
+const PLACEHOLDER = `Paste a decklist — labelled sections, or a plain "count name" list:
 
-4 Lightning Bolt
-4 Chain Lightning
-20 Mountain
-
-Sideboard
-2 Pyroblast`
+Legend: Azir, Emperor of the Sands
+Champion: Azir, Sovereign
+Main Deck:
+3 Arise!
+3 B.F. Sword
+Battlefields:
+1 Hall of Legends
+Runes:
+6 Calm Rune
+6 Order Rune
+Sideboard:
+2 Wind Wall`
 
 export default function DecklistImport({ onDone, onCancel }) {
   const [text, setText]       = useState('')
@@ -29,7 +35,8 @@ export default function DecklistImport({ onDone, onCancel }) {
     setBusy(false)
   }
 
-  const mainCount = result ? result.main.reduce((n, r) => n + r.count, 0) : 0
+  const mainCount = result ? mainDeckCount(result) : 0
+  const runeCount = result ? (result.runes ?? []).reduce((n, r) => n + r.count, 0) : 0
   const sideCount = result ? result.side.reduce((n, r) => n + r.count, 0) : 0
   const illegal   = result ? [...result.main, ...result.side].filter(r => r.legal === false) : []
 
@@ -47,7 +54,7 @@ export default function DecklistImport({ onDone, onCancel }) {
           />
           <div className="row">
             <button className="btn primary" onClick={resolve} disabled={busy || !text.trim()}>
-              {busy ? 'Resolving with Scryfall…' : 'Resolve'}
+              {busy ? 'Resolving cards…' : 'Resolve'}
             </button>
             <button className="btn" onClick={onCancel}>Cancel</button>
             {error && <span className="err">{error}</span>}
@@ -63,7 +70,7 @@ export default function DecklistImport({ onDone, onCancel }) {
               failing. Showing every resolved name is how that gets caught
               before it hits the deck reveal on air. */}
           <div className="import-summary">
-            <b>{mainCount}</b> mainboard · <b>{sideCount}</b> sideboard
+            <b>{mainCount}</b> main · <b>{runeCount}</b> runes · <b>{sideCount}</b> sideboard
             {result.unresolved.length > 0 && (
               <span className="warn"> · {result.unresolved.length} unresolved</span>
             )}
@@ -88,7 +95,27 @@ export default function DecklistImport({ onDone, onCancel }) {
               </div>
             )}
 
-            {[['Mainboard', result.main], ['Sideboard', result.side]].map(([label, rows]) =>
+            {/* Legend / Champion / Battlefields first — these become the
+                player's overlay cards when the list is used, so a wrong one
+                here is a wrong card on air. */}
+            {(result.legend || result.champion || result.battlefields?.length > 0) && (
+              <div className="rev-section">
+                <div className="rev-title">Identity</div>
+                {[
+                  ['Legend', result.legend],
+                  ['Champion', result.champion],
+                  ...(result.battlefields ?? []).map(c => ['Battlefield', c]),
+                ].map(([label, c], i) => (
+                  <div key={i} className="rev-row">
+                    <span className="rev-count">{label[0]}</span>
+                    <span className="rev-name">{c ? c.name : <span className="warn">none found</span>}</span>
+                    <span className="rev-type">{label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {[['Main deck', result.main], ['Runes', result.runes ?? []], ['Sideboard', result.side]].map(([label, rows]) =>
               rows.length > 0 && (
                 <div key={label} className="rev-section">
                   <div className="rev-title">{label}</div>

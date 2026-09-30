@@ -47,6 +47,9 @@ const defaultOverlay = () => ({
   // The signature full-frame matchup overlay (name / champion / video / battlefield
   // / showcase per side, race-to-8 score up top).
   matchupVisible: true,
+  // The P1 / P2 camera cut-outs inside the matchup overlay. Off for events with
+  // no player cams — the rails close the gap and the showcase card grows into it.
+  playerCamsVisible: true,
   cardZoom: null,
   decklistActive: null,
   deckRevealActive: null,
@@ -144,6 +147,7 @@ function migrate(s) {
   if (s.overlay.matchupVisible == null) {
     s.overlay.matchupVisible = s.overlay.nameplateVisible ?? true
   }
+  if (s.overlay.playerCamsVisible == null) s.overlay.playerCamsVisible = true
   if (s.overlay.cardZoom          === undefined) s.overlay.cardZoom    = null
   if (Array.isArray(s.overlay.decklistActive)) {
     s.overlay.decklistActive = s.overlay.decklistActive.length

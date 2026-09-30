@@ -5,6 +5,7 @@ import { api } from '../store.js'
 // the operator hits mid-match without looking, so they never move between tabs.
 const TOGGLES = [
   ['matchupVisible',     'Matchup'],
+  ['playerCamsVisible',  'Player cams'],   // the cam cut-outs inside Matchup
   ['standingsVisible',   'Standings'],
   ['timerVisible',       'Timer'],
   ['broadcasterVisible', 'Broadcaster'],

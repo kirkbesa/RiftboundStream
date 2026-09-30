@@ -238,12 +238,20 @@ export async function resolveRoster(content, onProgress) {
       ? await resolveDecklist(e.deckText)
       : null
 
+    // The deck names the player's identity cards, so lift them onto the roster
+    // entry — seating (playerFromRoster in state.js) copies these straight into
+    // the match slot, and they're what the matchup overlay draws. Battlefield is
+    // just a starting value: it's the first of the three, and the operator
+    // changes it game to game.
     players.push({
-      name:     e.name,
-      deckName: e.deckName,
-      handle:   e.handle,
-      pronouns: e.pronouns,
-      place:    e.place,
+      name:        e.name,
+      deckName:    e.deckName || decklist?.legend?.name?.split(/,|\s[-–—]\s/)[0] || '',
+      handle:      e.handle,
+      pronouns:    e.pronouns,
+      place:       e.place,
+      legend:      decklist?.legend ?? null,
+      champion:    decklist?.champion ?? null,
+      battlefield: decklist?.battlefields?.[0] ?? null,
       decklist,
     })
 

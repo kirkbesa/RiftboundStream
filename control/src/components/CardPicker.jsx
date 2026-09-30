@@ -8,7 +8,14 @@ import { domainColor } from '../mtg.jsx'
 //
 // `typeFilter` optionally narrows results to a card type (e.g. 'Legend',
 // 'Battlefield'), so the Legend picker doesn't surface Spells.
-export default function CardPicker({ label, value, onPick, typeFilter, placeholder }) {
+//
+// `options` — the cards the player's own decklist offers for this slot. When
+// given, the slot is a dropdown of those (switching battlefield between games is
+// one click), and searching the full pool is the fallback for anything off-list.
+// A pick from search that isn't in the deck stays selectable, marked (custom).
+const SEARCH = '__search__'
+
+export default function CardPicker({ label, value, onPick, typeFilter, placeholder, options = [] }) {
   const [open, setOpen]       = useState(false)
   const [q, setQ]             = useState('')
   const [results, setResults] = useState([])
@@ -37,11 +44,33 @@ export default function CardPicker({ label, value, onPick, typeFilter, placehold
     setResults([])
   }
 
+  const isCustom = value && !options.some(c => c.identifier === value.identifier)
+
+  const onSelect = (id) => {
+    if (id === SEARCH) { setOpen(true); return }   // controlled — the select snaps back to value
+    pick(id ? options.find(c => c.identifier === id) ?? value : null)
+  }
+
   return (
     <div className="cardpicker">
       <div className="cp-label">{label}</div>
 
-      {value ? (
+      {options.length > 0 ? (
+        <div className="cp-current" style={{ borderColor: value ? domainColor(value.domain) : undefined }}>
+          {value?.imageUrl
+            ? <img src={value.imageUrl} alt={value.name} className="cp-thumb" />
+            : <div className="cp-thumb ph">◆</div>}
+          <select className="cp-select" value={value?.identifier ?? ''} onChange={e => onSelect(e.target.value)}>
+            <option value="">— {placeholder ?? `Set ${label.toLowerCase()}`} —</option>
+            <optgroup label="From decklist">
+              {options.map(c => <option key={c.identifier} value={c.identifier}>{c.name}</option>)}
+            </optgroup>
+            {isCustom && <option value={value.identifier}>{value.name} (custom)</option>}
+            <option value={SEARCH}>Search all cards…</option>
+          </select>
+          <button className="tiny" title="Search all cards" onClick={() => setOpen(o => !o)}>⌕</button>
+        </div>
+      ) : value ? (
         <div className="cp-current" style={{ borderColor: domainColor(value.domain) }}>
           {value.imageUrl
             ? <img src={value.imageUrl} alt={value.name} className="cp-thumb" />

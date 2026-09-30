@@ -127,6 +127,61 @@ input:focus, select:focus, textarea:focus {
 }
 input[type=number] { font-variant-numeric: tabular-nums; }
 
+/* ── Dropdowns ──────────────────────────────────────────── */
+/* A native <select> opens a popup the OS draws, and on Windows that popup is
+   white — so options inheriting our light --text were light-on-white, readable
+   only under the hover highlight. Two layers fix it:
+     1. color-scheme: dark asks the browser for its dark popup, and the options
+        get explicit dark colors — this works in every browser.
+     2. Where customizable <select> is supported (Chromium 135+: current Chrome
+        and Edge), the popup becomes ours to style entirely, hover included. */
+:root { color-scheme: dark; }
+
+select { cursor: pointer; }
+select:hover:not(:focus) { border-color: rgba(255,255,255,0.18); background: rgba(255,255,255,0.08); }
+select option,
+select optgroup { background-color: var(--bg-raised); color: var(--text); }
+select optgroup { color: var(--dim); font-weight: 800; }
+select option:checked { background-color: var(--accent); color: #fff; }
+select option:disabled { color: var(--muted); }
+
+@supports (appearance: base-select) {
+  select, ::picker(select) { appearance: base-select; }
+
+  select { display: flex; align-items: center; gap: 6px; }
+  select::picker-icon { color: var(--dim); transition: rotate 0.15s; }
+  select:open::picker-icon { rotate: 180deg; }
+  select:open { border-color: var(--accent); }
+
+  ::picker(select) {
+    background: var(--bg-raised); color: var(--text);
+    border: 1px solid rgba(255,255,255,0.14); border-radius: 8px;
+    padding: 4px; margin-block: 4px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.55);
+    max-height: 340px; overflow-y: auto;
+  }
+
+  /* Same specificity as the fallback rules above, so these win here. */
+  select option {
+    background-color: transparent; color: var(--text);
+    padding: 6px 10px; border-radius: 5px; font-size: 13px;
+    font-weight: 400; text-transform: none; letter-spacing: normal;   /* undo the optgroup caption */
+  }
+  select option::checkmark { color: var(--accent); }
+  select option:hover,
+  select option:focus-visible { background-color: rgba(124,58,237,0.30); color: #fff; outline: none; }
+  select option:checked { background-color: rgba(124,58,237,0.16); color: #fff; font-weight: 600; }
+  select option:checked:hover { background-color: rgba(124,58,237,0.38); }
+
+  /* The group label ("From decklist") as a small caption, like the panel's
+     field labels. Its options inherit this, hence the reset on option above. */
+  select optgroup {
+    background-color: transparent; color: var(--muted);
+    font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+    padding-top: 4px;
+  }
+}
+
 .btn {
   padding: 7px 14px; border-radius: 7px;
   border: 1px solid var(--border); background: rgba(255,255,255,0.05);
@@ -264,6 +319,7 @@ input[type=number] { font-variant-numeric: tabular-nums; }
 .cp-thumb { width: 30px; height: 42px; object-fit: cover; border-radius: 4px;
             background: #11151f; flex-shrink: 0; }
 .cp-thumb.ph { display: flex; align-items: center; justify-content: center; color: var(--muted); }
+.cp-select { flex: 1; min-width: 0; font-size: 12px; padding: 5px 6px; }
 .cp-current-meta { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .cp-name { font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cp-sub  { font-size: 10px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

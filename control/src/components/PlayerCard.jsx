@@ -3,6 +3,7 @@ import { api } from '../store.js'
 import DecklistImport from './DecklistImport.jsx'
 import DeckSummary from './DeckSummary.jsx'
 import CardPicker from './CardPicker.jsx'
+import { identityOptions } from '../mtg.jsx'
 
 const POINTS_TO_WIN = 8
 const GAMES_TO_WIN  = 2
@@ -16,6 +17,7 @@ export default function PlayerCard({ player: p, mi, pi }) {
 
   const rec  = p.record ?? { w: 0, l: 0, d: 0 }
   const deck = p.decklist
+  const opts = identityOptions(deck)
   const pts  = p.points ?? 0
   const games = p.gameScore ?? 0
 
@@ -95,6 +97,7 @@ export default function PlayerCard({ player: p, mi, pi }) {
           label="Legend"
           value={p.legend ?? null}
           typeFilter="Legend"
+          options={opts.legends}
           placeholder="Set legend"
           onPick={(card) => patch({ legend: card })}
         />
@@ -102,12 +105,14 @@ export default function PlayerCard({ player: p, mi, pi }) {
           label="Champion Unit"
           value={p.champion ?? null}
           placeholder="Set champion"
+          options={opts.champions}
           onPick={(card) => patch({ champion: card })}
         />
         <CardPicker
           label="Battlefield"
           value={p.battlefield ?? null}
           typeFilter="Battlefield"
+          options={opts.battlefields}
           placeholder="Set battlefield"
           onPick={(card) => patch({ battlefield: card })}
         />
@@ -131,7 +136,15 @@ export default function PlayerCard({ player: p, mi, pi }) {
         {importing ? (
           <DecklistImport
             onDone={(resolved) => {
-              patch({ decklist: resolved })
+              // A deck names its own Legend and Champion, so importing one sets
+              // them. Battlefield only fills an empty slot — it's the one the
+              // operator changes game to game, and a re-import shouldn't undo that.
+              patch({
+                decklist: resolved,
+                ...(resolved.legend   && { legend:   resolved.legend }),
+                ...(resolved.champion && { champion: resolved.champion }),
+                ...(!p.battlefield && resolved.battlefields?.[0] && { battlefield: resolved.battlefields[0] }),
+              })
               setImporting(false)
             }}
             onCancel={() => setImporting(false)}

@@ -84,3 +84,45 @@ export const sortDeckRows = (rows) =>
   [...rows].sort((a, b) =>
     b.count - a.count || (a.cmc ?? 0) - (b.cmc ?? 0) || a.name.localeCompare(b.name)
   )
+// A Riftbound main deck is 40 cards counting the chosen champion, but a resolved
+// decklist keeps the champion in its own field (server/decklist.js) — so the 40
+// is main + 1. Decklists imported before that split have no champion field and
+// count as they are.
+export const mainDeckCount = (deck) =>
+  (deck?.main ?? []).reduce((n, r) => n + r.count, 0) + (deck?.champion ? 1 : 0)
+
+// "Azir - Emperor of the Sands" / "Azir, Sovereign" → "azir". A Legend and the
+// champion Units that pair with it share the champion's name before the title
+// (mirrors championKey in server/decklist.js).
+export const championKey = (name) =>
+  String(name ?? '').split(/,|\s[-–—]\s/)[0].toLowerCase().replace(/[^a-z0-9]/g, '')
+
+// The cards a player's own decklist offers for each identity slot, so the
+// operator picks from a short dropdown instead of searching the whole card pool
+// mid-match. Decklists imported before the parser understood sections kept
+// their Legend and Battlefields in `main`, so those are read back out by type.
+export function identityOptions(deck) {
+  const main = deck?.main ?? []
+  const card = ({ count, ...c }) => c          // a list row → a plain card
+  const uniq = (cards) => {
+    const seen = new Set()
+    return cards.filter(c => c && !seen.has(c.identifier) && seen.add(c.identifier))
+  }
+
+  const legends = uniq([deck?.legend, ...main.filter(r => r.type === 'Legend').map(card)])
+  const key     = championKey(legends[0]?.name)
+
+  return {
+    legends,
+    // The chosen champion, plus any main-deck Unit of the same champion — the
+    // deck can run a second version of them.
+    champions: uniq([
+      deck?.champion,
+      ...main.filter(r => key && r.type === 'Unit' && championKey(r.name) === key).map(card),
+    ]),
+    battlefields: uniq([
+      ...(deck?.battlefields ?? []),
+      ...main.filter(r => r.type === 'Battlefield').map(card),
+    ]),
+  }
+}

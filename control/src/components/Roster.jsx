@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useMemo, useRef } from 'react'
 import { api, useServerEvent } from '../store.js'
 import DeckSummary from './DeckSummary.jsx'
+import { mainDeckCount } from '../mtg.jsx'
 
 const FORMAT_LABEL = {
   csv:  'CSV',
@@ -229,7 +230,7 @@ export default function Roster({ state, editIndex }) {
                 </button>
 
                 <span className="rr-count">
-                  {p.decklist ? p.decklist.main.reduce((n, r) => n + r.count, 0) : '—'}
+                  {p.decklist ? mainDeckCount(p.decklist) : '—'}
                   {p.decklist?.unresolved?.length > 0 && (
                     <span className="warn" title={`${p.decklist.unresolved.length} unresolved`}> !</span>
                   )}
