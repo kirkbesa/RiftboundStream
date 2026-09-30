@@ -4,19 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Commentator — RiftboundStream</title>
+  <link rel="stylesheet" href="/overlays/theme.css" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:        #07070f;
-      --bg-card:   #0d0d1c;
-      --bg-raised: #161628;
-      --border:    rgba(255,255,255,0.08);
-      --accent:    #7c3aed;
-      --text:      #e8e8f5;
-      --dim:       rgba(232,232,245,0.50);
-      --muted:     rgba(232,232,245,0.28);
-      --on-the-play:     #fbbf24;
+      /* Riftbound palette — see /overlays/theme.css */
+      --bg:        var(--brand-ink);
+      --bg-card:   var(--brand-navy);
+      --bg-raised: #13203a;
+      --border:    rgba(240,230,210,0.09);
+      --accent:    var(--brand-gold);
+      --text:      #ece6da;
+      --dim:       rgba(236,230,218,0.52);
+      --muted:     rgba(236,230,218,0.30);
+      --on-the-play:     var(--brand-gold);
     }
 
     html, body {
@@ -59,7 +61,7 @@
     }
     .format-badge {
       font-size: 11px; font-weight: 700; color: var(--accent);
-      background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.25);
+      background: rgba(200,155,60,0.12); border: 1px solid rgba(200,155,60,0.25);
       border-radius: 20px; padding: 2px 9px;
       text-transform: uppercase; letter-spacing: 0.5px;
     }
@@ -70,8 +72,8 @@
     /* ── Event bar ──────────────────────────────────────── */
     #event-bar {
       text-align: center; padding: 7px 20px; font-size: 13px; font-weight: 600;
-      color: rgba(167,139,250,0.8); background: rgba(124,58,237,0.06);
-      border-bottom: 1px solid rgba(124,58,237,0.15); display: none;
+      color: rgba(224,195,138,0.8); background: rgba(200,155,60,0.06);
+      border-bottom: 1px solid rgba(200,155,60,0.15); display: none;
     }
     #event-bar.visible { display: block; }
 
@@ -91,12 +93,12 @@
       border-top: 3px solid var(--accent); border-radius: 8px;
       padding: 14px 16px; display: flex; flex-direction: column; gap: 5px;
     }
-    .player-card.p2 { border-top-color: #3b82f6; }
+    .player-card.p2 { border-top-color: #2b6fe0; }
 
     .player-role { font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
     .player-name { font-size: 24px; font-weight: 800; color: #fff; letter-spacing: -0.5px; line-height: 1.15; }
     .player-handle { font-size: 13px; color: var(--dim); }
-    .player-deck { font-size: 14px; font-weight: 600; color: rgba(167,139,250,0.85); font-style: italic; }
+    .player-deck { font-size: 14px; font-weight: 600; color: rgba(224,195,138,0.85); font-style: italic; }
     .player-record { font-size: 20px; font-weight: 800; color: rgba(255,255,255,0.55); letter-spacing: -0.5px; margin-top: 2px; }
 
     .player-stats { display: flex; align-items: center; gap: 10px; margin-top: 4px; flex-wrap: wrap; }
@@ -107,11 +109,13 @@
     }
     .stat-label { font-size: 9px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; }
     .stat-value { font-size: 26px; font-weight: 800; color: var(--accent); line-height: 1; margin-top: 1px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-    .stat-value.goal { color: #fbbf24; }  /* 8 points — the game is won */
+    /* 8 points — the game is won. Points are already gold, so the win reads as
+       pale gold with a glow rather than a colour change. */
+    .stat-value.goal { color: var(--brand-gold-light); text-shadow: 0 0 12px rgba(200,155,60,0.7); }
 
     .play-indicator { display: flex; align-items: center; gap: 7px; margin-top: 3px; }
     .play-dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.10); border: 2px solid rgba(255,255,255,0.14); flex-shrink: 0; }
-    .play-dot.active { background: var(--on-the-play); border-color: var(--on-the-play); box-shadow: 0 0 8px rgba(251,191,36,0.5); }
+    .play-dot.active { background: var(--on-the-play); border-color: var(--on-the-play); box-shadow: 0 0 8px rgba(200,155,60,0.5); }
     .play-text { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 1px; }
     .play-text.active { color: var(--on-the-play); }
 
@@ -139,8 +143,8 @@
       margin-bottom: 10px; display: flex; align-items: center; gap: 10px;
     }
     .zoom-active-badge {
-      font-size: 11px; font-weight: 600; color: #c4b5fd;
-      background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.25);
+      font-size: 11px; font-weight: 600; color: #f0e6d2;
+      background: rgba(200,155,60,0.12); border: 1px solid rgba(200,155,60,0.25);
       border-radius: 20px; padding: 1px 10px;
     }
 
@@ -151,7 +155,7 @@
       border-radius: 6px; color: var(--text); font-size: 15px;
       padding: 9px 12px; outline: none; font-family: inherit;
     }
-    .search-row input:focus { border-color: var(--accent); background: rgba(124,58,237,0.07); }
+    .search-row input:focus { border-color: var(--accent); background: rgba(200,155,60,0.07); }
 
     .btn-clear {
       background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
@@ -200,7 +204,7 @@
       border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;
     }
     .deck-column.p1 { border-top: 3px solid var(--accent); }
-    .deck-column.p2 { border-top: 3px solid #3b82f6; }
+    .deck-column.p2 { border-top: 3px solid #2b6fe0; }
 
     .deck-header {
       padding: 11px 14px 10px;
@@ -209,7 +213,7 @@
     }
     .deck-player-name { font-size: 15px; font-weight: 700; color: #fff; }
     .deck-name-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 2px; }
-    .deck-archetype { font-size: 12px; color: rgba(167,139,250,0.8); font-style: italic; }
+    .deck-archetype { font-size: 12px; color: rgba(224,195,138,0.8); font-style: italic; }
     .deck-total { font-size: 11px; font-weight: 600; color: var(--muted); }
 
     .deck-scroll { flex: 1; overflow-y: auto; padding: 6px 0 8px; max-height: 420px; }
@@ -231,7 +235,7 @@
     }
     .deck-type-count {
       font-size: 10px; font-weight: 600;
-      color: rgba(232,232,245,0.20);
+      color: rgba(236,230,218,0.20);
     }
 
     .deck-card-row {
@@ -241,7 +245,7 @@
       border-radius: 0;
     }
     .deck-card-row:hover { background: rgba(255,255,255,0.06); }
-    .deck-card-row.active { background: rgba(124,58,237,0.15); }
+    .deck-card-row.active { background: rgba(200,155,60,0.15); }
 
     .deck-card-thumb {
       width: 26px; height: 37px; border-radius: 3px;
@@ -255,7 +259,7 @@
       text-align: right; flex-shrink: 0;
       font-variant-numeric: tabular-nums;
     }
-    .deck-card-count.max { color: #c4b5fd; font-weight: 800; }
+    .deck-card-count.max { color: #f0e6d2; font-weight: 800; }
 
     .deck-type-dot {
       width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
@@ -275,12 +279,12 @@
     .notes-toggle {
       display: flex; align-items: center; gap: 6px;
       background: none; border: none; padding: 2px 0; width: 100%;
-      font-size: 10px; font-weight: 700; color: rgba(232,232,245,0.35);
+      font-size: 10px; font-weight: 700; color: rgba(236,230,218,0.35);
       text-transform: uppercase; letter-spacing: 1px;
       cursor: pointer; text-align: left; font-family: inherit;
       transition: color 0.14s;
     }
-    .notes-toggle:hover { color: rgba(232,232,245,0.6); }
+    .notes-toggle:hover { color: rgba(236,230,218,0.6); }
     .notes-caret { font-size: 9px; width: 10px; flex-shrink: 0; }
     .notes-dot {
       width: 5px; height: 5px; border-radius: 50%;
@@ -294,12 +298,12 @@
     }
     .notes-tab {
       background: rgba(255,255,255,0.03); border: none; border-right: 1px solid var(--border);
-      color: rgba(232,232,245,0.45); font-size: 11px; font-weight: 600;
+      color: rgba(236,230,218,0.45); font-size: 11px; font-weight: 600;
       padding: 3px 11px; cursor: pointer; font-family: inherit; transition: background 0.12s;
     }
     .notes-tab:last-child { border-right: none; }
     .notes-tab:hover { background: rgba(255,255,255,0.07); color: var(--text); }
-    .notes-tab.active { background: rgba(124,58,237,0.15); color: #c4b5fd; }
+    .notes-tab.active { background: rgba(200,155,60,0.15); color: #f0e6d2; }
     .notes-textarea {
       width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border);
       border-radius: 0 5px 5px 5px; color: var(--text);
@@ -307,8 +311,8 @@
       padding: 9px 11px; resize: vertical; min-height: 72px; outline: none;
       transition: border-color 0.14s;
     }
-    .notes-textarea:focus { border-color: rgba(124,58,237,0.4); }
-    .notes-textarea::placeholder { color: rgba(232,232,245,0.2); }
+    .notes-textarea:focus { border-color: rgba(200,155,60,0.4); }
+    .notes-textarea::placeholder { color: rgba(236,230,218,0.2); }
     .notes-preview {
       background: rgba(0,0,0,0.3); border: 1px solid var(--border);
       border-radius: 0 5px 5px 5px; font-size: 13px; line-height: 1.65;
@@ -805,7 +809,7 @@
       // Casters need the sideboard more than anyone — it's the whole story of
       // games 2 and 3, so it gets its own section rather than being dropped.
       if (side.length > 0) {
-        html += section('Sideboard', count(side), side, '#d4af37')
+        html += section('Sideboard', count(side), side, '#c89b3c')
       }
 
       html += `</div>`

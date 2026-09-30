@@ -35,14 +35,15 @@
       display: flex;
       flex-direction: column;
       gap: 16px;
-      background: linear-gradient(180deg, rgba(9,12,20,0.92) 0%, rgba(9,12,20,0.72) 100%);
+      background: linear-gradient(180deg, rgba(6,14,28,0.94) 0%, rgba(6,14,28,0.74) 100%);
     }
-    .rail.left  { left: 0;  border-right: 3px solid transparent; border-image: var(--rb-accent, var(--brand-gradient)) 1; }
-    .rail.right { right: 0; border-left:  3px solid transparent; border-image: var(--rb-accent, var(--brand-gradient)) 1; }
+    .rail.left  { left: 0;  border-right: 3px solid transparent; border-image: var(--brand-gradient) 1; }
+    .rail.right { right: 0; border-left:  3px solid transparent; border-image: var(--brand-gradient-blue) 1; }
 
-    /* Player accent — driven per side from the legend's domain colour. */
-    .rail.left  { --side: var(--p1, #fbbf24); }
-    .rail.right { --side: var(--p2, #2f6fed); }
+    /* Player accent — driven per side from the legend's domain colour, with
+       the brand's gold (P1) / blue (P2) until a Legend is set. */
+    .rail.left  { --side: var(--p1, var(--brand-p1)); }
+    .rail.right { --side: var(--p2, var(--brand-p2)); }
 
     /* ── Name banner ────────────────────────────────────────────── */
     /* Bare text on the rail, centred over the champion box — same on both
@@ -92,7 +93,7 @@
       height: 176px;
       border-radius: 10px;
       overflow: hidden;
-      background: #11151f;
+      background: var(--brand-navy);
       border: 1px solid rgba(255,255,255,0.1);
       display: flex;
       flex-direction: column;
@@ -164,7 +165,7 @@
     }
     .bf-art {
       aspect-ratio: 1038 / 744;
-      background-color: #11151f;
+      background-color: var(--brand-navy);
       background-size: contain;
       background-position: center;
       background-repeat: no-repeat;
@@ -228,7 +229,7 @@
       align-items: center;
       gap: 6px;
       padding: 8px 14px;
-      background: rgba(9,12,20,0.9);
+      background: var(--brand-panel);
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,0.1);
       box-shadow: 0 6px 24px rgba(0,0,0,0.55);
@@ -244,11 +245,11 @@
     }
     .pip.center { width: 38px; height: 38px; font-size: 18px; }
     /* Filled up to a player's current points, from their own end. */
-    .pip.p1-on { background: var(--p1, #fbbf24); color: #1a1005; border-color: var(--p1, #fbbf24); }
-    .pip.p2-on { background: var(--p2, #2f6fed); color: #fff;     border-color: var(--p2, #2f6fed); }
+    .pip.p1-on { background: var(--p1, var(--brand-p1)); color: var(--brand-ink); border-color: var(--p1, var(--brand-p1)); }
+    .pip.p2-on { background: var(--p2, var(--brand-p2)); color: #fff;             border-color: var(--p2, var(--brand-p2)); }
     .pip.center.goal { box-shadow: 0 0 16px rgba(255,255,255,0.5); color: #fff; background: rgba(255,255,255,0.14); }
-    .pip.center.won-p1 { background: var(--p1, #fbbf24); color: #1a1005; }
-    .pip.center.won-p2 { background: var(--p2, #2f6fed); color: #fff; }
+    .pip.center.won-p1 { background: var(--p1, var(--brand-p1)); color: var(--brand-ink); }
+    .pip.center.won-p2 { background: var(--p2, var(--brand-p2)); color: #fff; }
   </style>
 </head>
 <body>

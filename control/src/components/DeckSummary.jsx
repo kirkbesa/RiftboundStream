@@ -79,7 +79,7 @@ export default function DeckSummary({ deck }) {
 
         {(deck.side ?? []).length > 0 && (
           <div className="ds-group">
-            <div className="ds-group-title" style={{ color: '#d4af37' }}>
+            <div className="ds-group-title" style={{ color: 'var(--gold)' }}>
               Sideboard ({sideCount})
             </div>
             {sortDeckRows(deck.side).map(r => (

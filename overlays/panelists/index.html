@@ -37,9 +37,10 @@
     /* Individual panelist card — each fills half the wrapper */
     .panelist-card {
       width: calc(50% - 24px);
-      background: rgba(10, 10, 10, 0.88);
+      background: var(--brand-panel);
       backdrop-filter: blur(10px);
-      border-top: 4px solid var(--brand-blue);
+      border-top: 4px solid transparent;
+      border-image: var(--brand-gradient-blue) 1;
       border-radius: 10px;
       padding: 18px 32px 22px;
       display: flex;

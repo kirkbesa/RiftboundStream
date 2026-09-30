@@ -55,7 +55,7 @@ export const DOMAIN_COLORS = {
   Calm:      '#3fae5a',   // green
   Chaos:     '#9b5cc7',   // purple
   Order:     '#e0b23a',   // yellow
-  Multi:     '#d4af37',   // gold
+  Multi:     '#c89b3c',   // gold
   Colorless: '#9aa3ab',
 }
 

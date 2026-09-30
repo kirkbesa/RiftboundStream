@@ -1,25 +1,57 @@
-/* Broadcast brand palette — shared across all overlays. Swap these values to
-   re-brand every overlay at once. Gold is the default single-colour accent
-   (labels, highlights); the red → orange → gold → navy gradient is reserved
-   for the signature top/bottom accent stripes on panels and bars. */
-:root {
-  --brand-red:        #c8202f;
-  --brand-orange:     #f2823a;
-  --brand-gold:       #fbbf24;
-  --brand-gold-dim:   rgba(251, 191, 36, 0.75);
-  --brand-gold-soft:  rgba(251, 191, 36, 0.45);
-  --brand-gold-faint: rgba(251, 191, 36, 0.12);
-  --brand-navy:       #1e3a8a;
-  --brand-blue:       #2f6fed;
-  --brand-blue-dim:   rgba(47, 111, 237, 0.75);
-  --brand-blue-faint: rgba(47, 111, 237, 0.12);
+/* Riftbound broadcast palette — shared across all overlays, and linked by the
+   commentator and table pages. The control panel mirrors these values in
+   control/src/styles.css (it's a separate Vite build).
 
+   Taken from Riftbound's own look, which sits on League of Legends' hextech
+   style: antique gold on deep navy (the logo, and the Legend / Battlefield card
+   backs), and a saturated royal blue with a cyan glow (the main-deck card
+   backs). Gold is the default single-colour accent (labels, highlights, the
+   signature top/bottom stripes); blue is the second colour — Player 2's side,
+   secondary panels.
+
+   The six domain colours (Fury, Calm, Mind…) are the game's, not the brand's —
+   they live in overlays/riftbound.js and tint each player's side by Legend. */
+:root {
+  /* Gold — hextech brass, from deep to pale */
+  --brand-gold-deep:  #785a28;
+  --brand-gold:       #c89b3c;
+  --brand-gold-light: #f0e6d2;
+  --brand-gold-dim:   rgba(200, 155, 60, 0.75);
+  --brand-gold-soft:  rgba(200, 155, 60, 0.45);
+  --brand-gold-faint: rgba(200, 155, 60, 0.12);
+
+  /* Blue — the main-deck card back: royal blue into a cyan glow */
+  --brand-blue-deep:  #0b2a66;
+  --brand-blue:       #2b6fe0;
+  --brand-cyan:       #5ad2ff;
+  --brand-blue-dim:   rgba(43, 111, 224, 0.75);
+  --brand-blue-faint: rgba(43, 111, 224, 0.12);
+
+  /* Grounds — deep navy, never pure black */
+  --brand-ink:        #010a13;
+  --brand-navy:       #0a1428;
+  --brand-panel:      rgba(6, 14, 28, 0.9);    /* overlay panels over video */
+
+  /* Player sides, when no Legend domain colour is set */
+  --brand-p1: var(--brand-gold);
+  --brand-p2: var(--brand-blue);
+
+  /* The signature stripe: a gold bar that brightens to pale gold at its centre,
+     like the trim on a Riftbound card frame. */
   --brand-gradient: linear-gradient(
     90deg,
-    var(--brand-red) 0%,
-    var(--brand-orange) 28%,
-    var(--brand-gold) 52%,
-    #6b7280 76%,
-    var(--brand-navy) 100%
+    var(--brand-gold-deep) 0%,
+    var(--brand-gold) 28%,
+    var(--brand-gold-light) 50%,
+    var(--brand-gold) 72%,
+    var(--brand-gold-deep) 100%
+  );
+
+  /* Blue counterpart, deep → royal → cyan glow. */
+  --brand-gradient-blue: linear-gradient(
+    90deg,
+    var(--brand-blue-deep) 0%,
+    var(--brand-blue) 55%,
+    var(--brand-cyan) 100%
   );
 }

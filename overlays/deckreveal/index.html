@@ -36,7 +36,7 @@
       flex-shrink: 0;
       display: flex;
       align-items: stretch;
-      background: rgba(8, 8, 8, 0.88);
+      background: var(--brand-panel);
       backdrop-filter: blur(12px);
       border-bottom: 3px solid transparent;
       border-image: var(--brand-gradient) 1;
@@ -184,7 +184,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      background: rgba(6,6,6,0.88);
+      background: var(--brand-panel);
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 6px;
       padding: 4px 12px;
@@ -240,7 +240,7 @@
 
     /* Dark pill badge beneath each card */
     .qty-label {
-      background: rgba(6,6,6,0.88);
+      background: var(--brand-panel);
       border: 1px solid rgba(255,255,255,0.10);
       border-radius: 20px;
       padding: 3px 10px;
@@ -342,7 +342,7 @@
 
         if (barH > 0) {
           const barY = baseY - barH
-          content += `<rect x="${barX}" y="${barY}" width="${barW}" height="${barH}" fill="#fbbf24" rx="1" opacity="0.88"/>`
+          content += `<rect x="${barX}" y="${barY}" width="${barW}" height="${barH}" fill="#c89b3c" rx="1" opacity="0.9"/>`
           if (barH >= 14) {
             content += `<text x="${barX + barW / 2}" y="${barY - 2}" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.75)" font-family="system-ui,sans-serif">${count}</text>`
           }
@@ -447,10 +447,30 @@
     // Riftcodex card images are 744×1039 portrait.
     const CARD_RATIO = 744 / 1039
 
-    // Groups whose cards are landscape (Battlefields). Their tile is a portrait
-    // tile turned on its side: cardH wide, cardW tall.
-    const LANDSCAPE = new WeakSet()
-    const tileSize = (group, cardW, cardH) => LANDSCAPE.has(group) ? [cardH, cardW] : [cardW, cardH]
+    // Battlefield cards are landscape (1038×744), so their tile is a portrait
+    // tile turned on its side — cardH wide, cardW tall — and shows the whole
+    // card. Decided from the cards themselves, so it holds wherever a
+    // Battlefield turns up (its own section, or an older deck's main list).
+    const isLandscape = (group) =>
+      group.length > 0 && group.every(c => c.type === 'Battlefield' || c.orientation === 'landscape')
+    const tileSize = (group, cardW, cardH) => isLandscape(group) ? [cardH, cardW] : [cardW, cardH]
+
+    // Decklists imported before the parser understood sections kept their
+    // Legend, Battlefields and Runes in `main`. Sort those back out so an older
+    // deck reveals exactly like a new one — and its charts cover only the deck.
+    const SECTION_TYPES = ['Legend', 'Battlefield', 'Rune']
+    function withSections(deck) {
+      if (deck.legend || deck.battlefields || deck.runes) return deck
+      const main = deck.main ?? []
+      const ofType = (t) => main.filter(r => r.type === t)
+      return {
+        ...deck,
+        legend:       ofType('Legend')[0] ?? null,
+        battlefields: ofType('Battlefield'),
+        runes:        ofType('Rune'),
+        main:         main.filter(r => !SECTION_TYPES.includes(r.type)),
+      }
+    }
 
     // Section labels that are shown as given, not pluralised as a card type.
     const PLAIN_LABELS = new Set(['Legend & Champion', 'Battlefields', 'Runes', 'Sideboard'])
@@ -555,10 +575,7 @@
       const identity = [deck.legend, deck.champion].filter(Boolean).map(one)
       if (identity.length) groups.push(['Legend & Champion', identity])
       const battlefields = (deck.battlefields ?? []).map(one)
-      if (battlefields.length) {
-        LANDSCAPE.add(battlefields)
-        groups.push(['Battlefields', battlefields])
-      }
+      if (battlefields.length) groups.push(['Battlefields', battlefields])
 
       groups.push(...RB.groupByType(deck.main ?? []))
 
@@ -696,7 +713,7 @@
       // Charts (energy curve, type/domain breakdown) cover the 40 cards the
       // deck draws from — main deck plus the chosen champion. The sideboard,
       // runes and battlefields aren't part of that, but the grid shows them all.
-      const deck = player.decklist ?? {}
+      const deck = withSections(player.decklist ?? {})
       const main = deck.main ?? []
       const drawn = deck.champion ? [...main, { count: 1, ...deck.champion }] : main
 

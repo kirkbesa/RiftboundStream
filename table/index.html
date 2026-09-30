@@ -5,21 +5,23 @@
   <!-- user-scalable=no prevents accidental pinch-zoom mid-game -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>Table — RiftboundStream</title>
+  <link rel="stylesheet" href="/overlays/theme.css" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:       #07070f;
-      --bg-card:  #0d0d1c;
-      --border:   rgba(255,255,255,0.08);
-      --accent:   #7c3aed;
-      --text:     #e8e8f5;
-      --dim:      rgba(232,232,245,0.45);
-      --muted:    rgba(232,232,245,0.22);
-      --p1-color: #7c3aed;
-      --p2-color: #3b82f6;
+      /* Riftbound palette — see /overlays/theme.css */
+      --bg:       var(--brand-ink);
+      --bg-card:  var(--brand-navy);
+      --border:   rgba(240,230,210,0.09);
+      --accent:   var(--brand-gold);
+      --text:     #ece6da;
+      --dim:      rgba(236,230,218,0.47);
+      --muted:    rgba(236,230,218,0.24);
+      --p1-color: var(--brand-p1);
+      --p2-color: var(--brand-p2);
       --btn-dec:  rgba(239,68,68,0.18);
-      --btn-inc:  rgba(124,58,237,0.22);
+      --btn-inc:  rgba(200,155,60,0.22);
     }
 
     html, body {
@@ -120,7 +122,7 @@
     }
     .counter-display.bump {
       transform: scale(1.12);
-      color: #c4b5fd;
+      color: #f0e6d2;
     }
     .counter-label {
       font-size: 10px;
@@ -173,12 +175,12 @@
     }
 
     .counter-btn.inc {
-      background: rgba(34,197,94,0.16);
-      box-shadow: inset 0 0 0 1px rgba(34,197,94,0.28);
-      color: #86efac;
+      background: rgba(43,111,224,0.16);
+      box-shadow: inset 0 0 0 1px rgba(43,111,224,0.28);
+      color: #5ad2ff;
     }
     .counter-btn.inc:active {
-      background: rgba(34,197,94,0.28);
+      background: rgba(43,111,224,0.28);
     }
 
     /* Disabled state (counter already at its limit) */
@@ -188,7 +190,7 @@
     }
 
     /* 8 points — the game is won */
-    .counter-display.goal { color: #fbbf24; }
+    .counter-display.goal { color: #c89b3c; }
 
     /* ── Games (Bo3) row ───────────────────────────────────────── */
     .games-row {
@@ -220,7 +222,7 @@
       width: 18px; height: 18px; border-radius: 50%;
       border: 2px solid rgba(255,255,255,0.4);
     }
-    .games-pip.on { background: #fbbf24; border-color: #fbbf24; }
+    .games-pip.on { background: #c89b3c; border-color: #c89b3c; }
     .games-label {
       font-size: 10px; font-weight: 700; letter-spacing: 2px;
       text-transform: uppercase; color: var(--muted);
@@ -249,9 +251,9 @@
     }
     .mini-btn:active   { background: rgba(255,255,255,0.12); }
     .mini-btn.active   {
-      background: rgba(124,58,237,0.20);
-      border-color: rgba(124,58,237,0.45);
-      color: #c4b5fd;
+      background: rgba(200,155,60,0.20);
+      border-color: rgba(200,155,60,0.45);
+      color: #f0e6d2;
     }
 
     /* ── Center strip (tabs + play/draw) ───────────────────────── */
@@ -298,9 +300,9 @@
       white-space: nowrap;
     }
     .match-tab.active {
-      background: rgba(124,58,237,0.20);
-      border-color: rgba(124,58,237,0.45);
-      color: #c4b5fd;
+      background: rgba(200,155,60,0.20);
+      border-color: rgba(200,155,60,0.45);
+      color: #f0e6d2;
     }
     .match-tab .live-dot {
       display: inline-block;
@@ -328,7 +330,7 @@
       font-weight: 800;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: rgba(251,191,36,0.45);
+      color: rgba(200,155,60,0.45);
       flex-shrink: 0;
       min-width: 90px;   /* fits "On the Play" without wrapping */
       text-align: center;
@@ -344,7 +346,7 @@
       border-radius: 12px;
       border: 1px solid rgba(255,255,255,0.1);
       background: rgba(255,255,255,0.04);
-      color: rgba(232,232,245,0.2);
+      color: rgba(236,230,218,0.2);
       font-size: 24px;
       line-height: 1;
       cursor: pointer;
@@ -356,10 +358,10 @@
     .play-arrow:active { transform: scale(0.91); }
 
     .play-arrow.active {
-      background: rgba(251,191,36,0.16);
-      border-color: rgba(251,191,36,0.55);
-      color: #fbbf24;
-      box-shadow: 0 0 14px rgba(251,191,36,0.28);
+      background: rgba(200,155,60,0.16);
+      border-color: rgba(200,155,60,0.55);
+      color: #c89b3c;
+      box-shadow: 0 0 14px rgba(200,155,60,0.28);
     }
 
     /* ── Connection badge ──────────────────────────────────────── */

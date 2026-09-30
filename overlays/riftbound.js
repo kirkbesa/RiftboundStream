@@ -24,7 +24,7 @@
     Calm:      '#3fae5a',
     Chaos:     '#9b5cc7',
     Order:     '#e0b23a',
-    Multi:     '#d4af37',
+    Multi:     '#c89b3c',
     Colorless: '#9aa3ab',
   }
 
