@@ -1,0 +1,30 @@
+{
+  "name": "riftboundstream",
+  "version": "1.0.0",
+  "description": "Broadcast overlay and control panel for Riftbound TCG tournament streams",
+  "author": "Kirk Besa <kirkpatrickbesa@gmail.com>",
+  "license": "UNLICENSED",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kirkbesa/RiftboundStream.git"
+  },
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.js",
+    "build": "vite build",
+    "dev": "vite"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "papaparse": "^5.5.4",
+    "ws": "^8.17.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "vite": "^5.4.11"
+  }
+}

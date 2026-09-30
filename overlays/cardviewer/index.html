@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Card Viewer Overlay</title>
+  <link rel="stylesheet" href="/overlays/theme.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      background: transparent;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    /* Centered in the nameplate overlay's reserved left column (see
+       overlays/nameplate: #card-preview-slot, width 320px) — vertically
+       centered between the top and bottom nameplate bars. Just the card —
+       the printed card already carries its own name, mana cost and type
+       line, so an info pill under it was restating what the viewer can
+       plainly read. */
+    #viewer {
+      position: absolute;
+      top: 50%;
+      left: 20px;
+      opacity: 0;
+      transform: translateY(calc(-50% + 20px)) scale(0.95);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      pointer-events: none;
+    }
+
+    #viewer.visible {
+      opacity: 1;
+      transform: translateY(-50%) scale(1);
+    }
+
+    #card-image {
+      width: 280px;
+      border-radius: 12px;
+      display: block;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.07);
+    }
+
+    #card-image.hidden { display: none; }
+
+    /* Shown while the image loads, or if it fails — keeps the slot from
+       collapsing and popping the layout. */
+    #card-placeholder {
+      width: 280px;
+      height: 392px;   /* ~5:7, a card's aspect ratio */
+      border-radius: 12px;
+      background: rgba(20,20,20,0.88);
+      border: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #card-placeholder.hidden { display: none; }
+
+    .placeholder-inner {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--plph-gold-faint);
+      border: 2px solid var(--plph-gold-soft);
+    }
+  </style>
+</head>
+<body>
+  <div id="viewer">
+    <img id="card-image" class="hidden" alt="" />
+    <div id="card-placeholder">
+      <div class="placeholder-inner"></div>
+    </div>
+  </div>
+
+  <script src="/overlays/ws.js"></script>
+  <script>
+    const viewer      = document.getElementById('viewer')
+    const cardImage   = document.getElementById('card-image')
+    const placeholder = document.getElementById('card-placeholder')
+
+    let currentIdentifier = null
+
+    async function showCard(identifier) {
+      if (identifier === currentIdentifier) return
+      currentIdentifier = identifier
+
+      if (!identifier) {
+        viewer.classList.remove('visible')
+        return
+      }
+
+      try {
+        const res = await fetch(`/api/cards/${identifier}`)
+        if (!res.ok) throw new Error('not found')
+        const card = await res.json()
+
+        if (card.imageUrl) {
+          cardImage.src    = card.imageUrl
+          cardImage.onload = () => {
+            cardImage.classList.remove('hidden')
+            placeholder.classList.add('hidden')
+          }
+          cardImage.onerror = () => {
+            cardImage.classList.add('hidden')
+            placeholder.classList.remove('hidden')
+          }
+        } else {
+          cardImage.classList.add('hidden')
+          placeholder.classList.remove('hidden')
+        }
+      } catch {
+        cardImage.classList.add('hidden')
+        placeholder.classList.remove('hidden')
+      }
+
+      viewer.classList.add('visible')
+    }
+
+    function render(state) {
+      const id = state.overlay?.cardZoom ?? null
+      if (!id) {
+        viewer.classList.remove('visible')
+        currentIdentifier = null
+      } else {
+        showCard(id)
+      }
+    }
+
+    connectOverlay(msg => { if (msg.type === 'state') render(msg.data) })
+  </script>
+</body>
+</html>
