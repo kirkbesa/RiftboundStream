@@ -1,8 +1,6 @@
-// control/src/mtg.jsx — Riftbound display primitives for the control panel.
-//
-// (Filename kept from the MTG original so imports don't churn; the contents are
-// Riftbound now.) These mirror the accent colours in server/riftbound.js and the
-// overlays so the panel's preview of a card matches what goes to air.
+// control/src/riftbound.jsx — Riftbound display primitives for the control
+// panel. These mirror the accent colours in server/riftbound.js and
+// overlays/riftbound.js so the panel's preview of a card matches what goes to air.
 
 // Riftbound's six domains + their broadcast accent colours. Keep in step with
 // DOMAIN_COLORS in server/riftbound.js.
@@ -19,10 +17,10 @@ export const DOMAIN_COLORS = {
 
 export const domainColor = (d) => DOMAIN_COLORS[d] ?? DOMAIN_COLORS.Colorless
 
-// Card types, in the order a decklist reads.
-export const TYPE_ORDER = [
-  'Legend', 'Champion', 'Unit', 'Spell', 'Gear', 'Rune', 'Battlefield', 'Token',
-]
+// The main deck's card types, in the order a decklist reads. Legend, Champion,
+// Battlefields and Runes are never in `main` — a resolved decklist keeps them in
+// their own fields (server/decklist.js) — but they're coloured below too.
+export const TYPE_ORDER = ['Unit', 'Spell', 'Gear', 'Token']
 
 export const TYPE_COLORS = {
   Legend:      '#e0b23a',
@@ -40,7 +38,7 @@ export const typeColor = (t) => TYPE_COLORS[t] ?? '#9aa3ab'
 export const plural = (type, n) =>
   n === 1 ? type : `${type}s`
 
-// Small numeric energy badge — Riftbound's resource cost. Replaces MTG mana pips.
+// Small numeric energy badge — a card's resource cost.
 export function EnergyBadge({ energy, size = 15 }) {
   if (energy == null) return null
   return (
@@ -53,14 +51,6 @@ export function EnergyBadge({ energy, size = 15 }) {
       {energy}
     </span>
   )
-}
-
-// Kept as an alias so DeckSummary / DecklistImport / CardSearch keep importing it.
-// Riftbound cards have no mana string, so `cost` arrives falsy and this renders
-// nothing; energy is shown via EnergyBadge instead.
-export function ManaCost({ cost }) {
-  if (!cost) return null
-  return <span className="mana">{cost}</span>
 }
 
 export function groupByType(rows) {
@@ -78,12 +68,13 @@ export function groupByType(rows) {
   return ordered
 }
 
-// Sort a section the way a player reads their list: the many-ofs that define the
+// Sort a section the way a player reads their list: the 3-ofs that define the
 // deck first, then up the energy curve.
 export const sortDeckRows = (rows) =>
   [...rows].sort((a, b) =>
-    b.count - a.count || (a.cmc ?? 0) - (b.cmc ?? 0) || a.name.localeCompare(b.name)
+    b.count - a.count || (a.energy ?? 0) - (b.energy ?? 0) || a.name.localeCompare(b.name)
   )
+
 // A Riftbound main deck is 40 cards counting the chosen champion, but a resolved
 // decklist keeps the champion in its own field (server/decklist.js) — so the 40
 // is main + 1. Decklists imported before that split have no champion field and

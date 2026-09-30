@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Commentator — MTGStream</title>
+  <title>Commentator — RiftboundStream</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -107,7 +107,7 @@
     }
     .stat-label { font-size: 9px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; }
     .stat-value { font-size: 26px; font-weight: 800; color: var(--accent); line-height: 1; margin-top: 1px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-    .stat-value.low { color: #f87171; }   /* life <= 5 */
+    .stat-value.goal { color: #fbbf24; }  /* 8 points — the game is won */
 
     .play-indicator { display: flex; align-items: center; gap: 7px; margin-top: 3px; }
     .play-dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.10); border: 2px solid rgba(255,255,255,0.14); flex-shrink: 0; }
@@ -255,7 +255,7 @@
       text-align: right; flex-shrink: 0;
       font-variant-numeric: tabular-nums;
     }
-    .deck-card-count.max4 { color: #c4b5fd; font-weight: 800; }
+    .deck-card-count.max { color: #c4b5fd; font-weight: 800; }
 
     .deck-type-dot {
       width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
@@ -330,7 +330,7 @@
 <body>
 
   <div class="header">
-    <div class="header-brand">MTGStream <span>(Commentator)</span></div>
+    <div class="header-brand">RiftboundStream <span>(Commentator)</span></div>
     <div class="header-meta">
       <span class="match-label" id="match-label">—</span>
       <span class="round-badge" id="round-badge">Round 1</span>
@@ -359,10 +359,10 @@
         <div class="player-record" id="p1-record"></div>
         <div class="player-stats">
           <div class="stat-pill">
-            <div class="stat-label">Life</div>
-            <div class="stat-value" id="p1-cip">0</div>
+            <div class="stat-label">Points</div>
+            <div class="stat-value" id="p1-points">0</div>
           </div>
-          <div class="stat-pill" id="p1-score-pill" style="display:none">
+          <div class="stat-pill">
             <div class="stat-label">Games Won</div>
             <div class="stat-value" id="p1-score">0</div>
           </div>
@@ -401,10 +401,10 @@
         <div class="player-record" id="p2-record"></div>
         <div class="player-stats">
           <div class="stat-pill">
-            <div class="stat-label">Life</div>
-            <div class="stat-value" id="p2-cip">0</div>
+            <div class="stat-label">Points</div>
+            <div class="stat-value" id="p2-points">0</div>
           </div>
-          <div class="stat-pill" id="p2-score-pill" style="display:none">
+          <div class="stat-pill">
             <div class="stat-label">Games Won</div>
             <div class="stat-value" id="p2-score">0</div>
           </div>
@@ -493,7 +493,7 @@
 
   </div>
 
-  <script src="/overlays/mtg.js"></script>
+  <script src="/overlays/riftbound.js"></script>
   <script>
     /* ── Lightweight markdown renderer ──────────────────── */
     function renderMd(raw) {
@@ -615,7 +615,7 @@
     // Decklists arrive from state already resolved, so there's nothing to fetch
     // or cache. We only track the last-rendered signature per player to avoid
     // rebuilding the (large) deck column DOM on every unrelated state push —
-    // a life tap shouldn't re-render 75 card rows.
+    // a point tap shouldn't re-render the whole deck column.
     const deckSigs = [null, null]
 
     /* ── DOM ─────────────────────────────────────────────── */
@@ -691,10 +691,9 @@
       timerState = timer ?? null
       timerRow.classList.toggle('visible', overlay.timerVisible ?? false)
 
-      const isTopCut  = match.format === 'topcut'
       const onThePlay = match.onThePlay ?? null
-      renderPlayer('p1', players[0], isTopCut, onThePlay === 'p1')
-      renderPlayer('p2', players[1], isTopCut, onThePlay === 'p2')
+      renderPlayer('p1', players[0], onThePlay === 'p1')
+      renderPlayer('p2', players[1], onThePlay === 'p2')
 
       // Deck lists — only re-resolve when decklist changes
       updateDecks(players)
@@ -712,7 +711,7 @@
       zoomBadge.style.display  = zoom ? '' : 'none'
     }
 
-    function renderPlayer(prefix, p, isTopCut, isOnThePlay) {
+    function renderPlayer(prefix, p, isOnThePlay) {
       document.getElementById(`${prefix}-name`).textContent = p.name || 'TBD'
       const parts = []
       if (p.handle)   parts.push(p.handle.startsWith('@') ? p.handle : '@' + p.handle)
@@ -724,16 +723,14 @@
       document.getElementById(`${prefix}-record`).textContent =
         blank ? '' : `${rec.w}–${rec.l}${rec.d?'–'+rec.d:''}`
 
-      // Life, plus poison/energy appended only when they're actually in play.
-      const extras = []
-      if (p.poison > 0) extras.push(`☠${p.poison}`)
-      if (p.energy > 0) extras.push(`⚡${p.energy}`)
-      const lifeEl = document.getElementById(`${prefix}-cip`)
-      lifeEl.textContent = `${p.life ?? 20}${extras.length ? '  ' + extras.join(' ') : ''}`
-      lifeEl.classList.toggle('low', (p.life ?? 20) <= 5)
+      // Race-to-8 points this game, and Bo3 games won — every Riftbound match
+      // is best-of-three, Swiss or top cut, so both are always shown.
+      const pts = p.points ?? 0
+      const ptsEl = document.getElementById(`${prefix}-points`)
+      ptsEl.textContent = `${pts} / 8`
+      ptsEl.classList.toggle('goal', pts >= 8)
 
       document.getElementById(`${prefix}-score`).textContent = p.gameScore ?? 0
-      document.getElementById(`${prefix}-score-pill`).style.display = isTopCut ? '' : 'none'
       document.getElementById(`${prefix}-play-dot`).classList.toggle('active', isOnThePlay)
       document.getElementById(`${prefix}-play-text`).classList.toggle('active', isOnThePlay)
     }
@@ -747,9 +744,9 @@
         const deck = p?.decklist ?? null
 
         // Rebuild only when the deck (or the player it belongs to) actually
-        // changed — otherwise every life tap would re-render the whole column.
+        // changed — otherwise every point tap would re-render the whole column.
         const sig = deck
-          ? `${p?.name}|${p?.deckName}|${deck.main?.length}|${deck.side?.length}|${deck.main?.[0]?.identifier ?? ''}`
+          ? `${p?.name}|${p?.deckName}|${deck.legend?.identifier ?? ''}|${deck.main?.length}|${deck.side?.length}|${deck.main?.[0]?.identifier ?? ''}`
           : `${p?.name}|none`
         if (sig === deckSigs[i]) continue
         deckSigs[i] = sig
@@ -775,10 +772,12 @@
     }
 
     function buildDeckColumn(col, deck, { playerName, deckName }) {
-      const main  = deck.main ?? []
-      const side  = deck.side ?? []
-      const total = main.reduce((n, c) => n + c.count, 0)
-      const sideTotal = side.reduce((n, c) => n + c.count, 0)
+      const main  = deck.main  ?? []
+      const runes = deck.runes ?? []
+      const side  = deck.side  ?? []
+      const total = RB.mainCount(deck)
+      const count = (rows) => rows.reduce((n, c) => n + c.count, 0)
+      const one   = (card) => ({ count: 1, ...card })
 
       let html = `
         <div class="deck-header">
@@ -790,15 +789,23 @@
         </div>
         <div class="deck-scroll">`
 
-      for (const [typeName, cards] of MTG.groupByType(main)) {
-        const typeTotal = cards.reduce((n, c) => n + c.count, 0)
-        html += section(MTG.plural(typeName, typeTotal), typeTotal, cards, MTG.typeColor(typeName))
+      // The deck's identity first: Legend, chosen Champion, Battlefields.
+      const identity = [deck.legend, deck.champion].filter(Boolean).map(one)
+      if (identity.length) html += section('Legend & Champion', identity.length, identity, RB.typeColor('Legend'))
+      const battlefields = (deck.battlefields ?? []).map(one)
+      if (battlefields.length) html += section('Battlefields', battlefields.length, battlefields, RB.typeColor('Battlefield'))
+
+      for (const [typeName, cards] of RB.groupByType(main)) {
+        const typeTotal = count(cards)
+        html += section(RB.plural(typeName, typeTotal), typeTotal, cards, RB.typeColor(typeName))
       }
+
+      if (runes.length > 0) html += section('Runes', count(runes), runes, RB.typeColor('Rune'))
 
       // Casters need the sideboard more than anyone — it's the whole story of
       // games 2 and 3, so it gets its own section rather than being dropped.
       if (side.length > 0) {
-        html += section('Sideboard', sideTotal, side, '#d4af37')
+        html += section('Sideboard', count(side), side, '#d4af37')
       }
 
       html += `</div>`
@@ -812,11 +819,7 @@
           <span class="deck-type-count">${total}</span>
         </div>`
 
-      const sorted = [...cards].sort((a, b) =>
-        b.count - a.count || (a.cmc ?? 0) - (b.cmc ?? 0) || a.name.localeCompare(b.name)
-      )
-
-      for (const card of sorted) {
+      for (const card of RB.sortRows(cards)) {
         const isActive = currentZoom === card.identifier
         const imgEl    = card.imageUrl
           ? `<img class="deck-card-thumb" src="${card.imageUrl}" alt="${escHtml(card.name)}" loading="lazy" />`
@@ -826,9 +829,9 @@
                data-id="${card.identifier}"
                onclick="toggleZoom('${card.identifier}')">
             ${imgEl}
-            <span class="deck-card-count${card.count >= 4 ? ' max4' : ''}">×${card.count}</span>
+            <span class="deck-card-count${card.count >= RB.MAX_COPIES ? ' max' : ''}">×${card.count}</span>
             <span class="deck-type-dot" style="background:${color}"></span>
-            <span class="deck-card-name">${escHtml(card.name)}</span>
+            <span class="deck-card-name">${escHtml(RB.displayName(card.name))}</span>
           </div>`
       }
       return html + `</div>`
@@ -889,7 +892,7 @@
           } else { btn.appendChild(makePlaceholder()) }
           const bar = document.createElement('div')
           bar.className = 'card-type-bar'
-          bar.style.background = MTG.typeColor(card.type)
+          bar.style.background = RB.typeColor(card.type)
           btn.appendChild(bar)
           const lbl = document.createElement('div')
           lbl.className = 'card-name-label'; lbl.textContent = card.name

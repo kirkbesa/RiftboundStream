@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { api } from '../store.js'
-import { ManaCost, mainDeckCount } from '../mtg.jsx'
+import { EnergyBadge, mainDeckCount } from '../riftbound.jsx'
 
 const PLACEHOLDER = `Paste a decklist — labelled sections, or a plain "count name" list:
 
@@ -38,7 +38,6 @@ export default function DecklistImport({ onDone, onCancel }) {
   const mainCount = result ? mainDeckCount(result) : 0
   const runeCount = result ? (result.runes ?? []).reduce((n, r) => n + r.count, 0) : 0
   const sideCount = result ? result.side.reduce((n, r) => n + r.count, 0) : 0
-  const illegal   = result ? [...result.main, ...result.side].filter(r => r.legal === false) : []
 
   return (
     <div className="import">
@@ -64,7 +63,7 @@ export default function DecklistImport({ onDone, onCancel }) {
 
       {result && (
         <>
-          {/* Review before committing. Scryfall's fuzzy matcher is forgiving,
+          {/* Review before committing. Riftcodex's fuzzy matcher is forgiving,
               which is what makes messy player-submitted lists importable — but
               it also means a typo can resolve to the WRONG card rather than
               failing. Showing every resolved name is how that gets caught
@@ -73,9 +72,6 @@ export default function DecklistImport({ onDone, onCancel }) {
             <b>{mainCount}</b> main · <b>{runeCount}</b> runes · <b>{sideCount}</b> sideboard
             {result.unresolved.length > 0 && (
               <span className="warn"> · {result.unresolved.length} unresolved</span>
-            )}
-            {illegal.length > 0 && (
-              <span className="warn"> · {illegal.length} not format-legal</span>
             )}
           </div>
 
@@ -120,12 +116,11 @@ export default function DecklistImport({ onDone, onCancel }) {
                 <div key={label} className="rev-section">
                   <div className="rev-title">{label}</div>
                   {rows.map((r, i) => (
-                    <div key={i} className={`rev-row${r.legal === false ? ' illegal' : ''}`}>
+                    <div key={i} className="rev-row">
                       <span className="rev-count">{r.count}</span>
                       <span className="rev-name">{r.name}</span>
-                      <ManaCost cost={r.manaCost} size={13} />
-                      <span className="rev-type">{r.typeLine}</span>
-                      {r.legal === false && <span className="rev-flag">not legal</span>}
+                      <EnergyBadge energy={r.energy} size={11} />
+                      <span className="rev-type">{r.type}</span>
                     </div>
                   ))}
                 </div>

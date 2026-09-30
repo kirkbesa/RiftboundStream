@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { api } from '../store.js'
-import { EnergyBadge, domainColor } from '../mtg.jsx'
+import { EnergyBadge, domainColor } from '../riftbound.jsx'
 
 export default function CardSearch({ state }) {
   const [q, setQ]             = useState('')
@@ -10,8 +10,8 @@ export default function CardSearch({ state }) {
 
   const zoomed = state.overlay?.cardZoom ?? null
 
-  // Debounced so typing "lightning bolt" is one Scryfall call, not thirteen —
-  // the server serialises requests at 100ms each, so an undebounced search
+  // Debounced so typing "master yi" is one Riftcodex call, not nine —
+  // the server serialises requests through a rate-limited queue, so an undebounced search
   // would queue up behind itself and feel broken.
   const timer = useRef(null)
   useEffect(() => {

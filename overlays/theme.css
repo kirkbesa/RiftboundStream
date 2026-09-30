@@ -1,25 +1,25 @@
-/* PLPH (Liga Pauper Pilipinas) brand palette — shared across all overlays.
-   Red → orange → gold → navy mirrors the LPPI banner gradient; gold is the
-   default single-color accent (labels, highlights), the gradient is reserved
+/* Broadcast brand palette — shared across all overlays. Swap these values to
+   re-brand every overlay at once. Gold is the default single-colour accent
+   (labels, highlights); the red → orange → gold → navy gradient is reserved
    for the signature top/bottom accent stripes on panels and bars. */
 :root {
-  --plph-red:        #c8202f;
-  --plph-orange:     #f2823a;
-  --plph-gold:       #fbbf24;
-  --plph-gold-dim:   rgba(251, 191, 36, 0.75);
-  --plph-gold-soft:  rgba(251, 191, 36, 0.45);
-  --plph-gold-faint: rgba(251, 191, 36, 0.12);
-  --plph-navy:       #1e3a8a;
-  --plph-blue:       #2f6fed;
-  --plph-blue-dim:   rgba(47, 111, 237, 0.75);
-  --plph-blue-faint: rgba(47, 111, 237, 0.12);
+  --brand-red:        #c8202f;
+  --brand-orange:     #f2823a;
+  --brand-gold:       #fbbf24;
+  --brand-gold-dim:   rgba(251, 191, 36, 0.75);
+  --brand-gold-soft:  rgba(251, 191, 36, 0.45);
+  --brand-gold-faint: rgba(251, 191, 36, 0.12);
+  --brand-navy:       #1e3a8a;
+  --brand-blue:       #2f6fed;
+  --brand-blue-dim:   rgba(47, 111, 237, 0.75);
+  --brand-blue-faint: rgba(47, 111, 237, 0.12);
 
-  --plph-gradient: linear-gradient(
+  --brand-gradient: linear-gradient(
     90deg,
-    var(--plph-red) 0%,
-    var(--plph-orange) 28%,
-    var(--plph-gold) 52%,
+    var(--brand-red) 0%,
+    var(--brand-orange) 28%,
+    var(--brand-gold) 52%,
     #6b7280 76%,
-    var(--plph-navy) 100%
+    var(--brand-navy) 100%
   );
 }

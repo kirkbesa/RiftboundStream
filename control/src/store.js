@@ -22,7 +22,7 @@ export function useServerEvent(type, handler) {
 }
 
 // The server broadcasts state WITHOUT the roster — a 64-player field with
-// resolved decklists is ~0.5 MB, and shipping it on every life tap would drown
+// resolved decklists is ~0.5 MB, and shipping it on every point tap would drown
 // the venue Wi-Fi. The roster arrives on its own channel instead: fetched once
 // when we connect, then pushed only when it actually changes.
 //

@@ -1,7 +1,7 @@
 # Dependencies
 node_modules/
 
-# Scryfall card + image cache.
+# Riftcodex card + image cache.
 # Regenerates itself on first lookup, and is ~43 MB of art that has no business
 # in git. NOTE: this means a fresh clone starts with a COLD cache — import the
 # decklists before you go live, so the venue Wi-Fi dropping can't blank an

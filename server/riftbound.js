@@ -1,6 +1,5 @@
 // server/riftbound.js — Riftbound card data via the Riftcodex API, with a disk
-// cache. Modelled on the old Scryfall client so the rest of the app keeps the
-// same lookup surface:
+// cache. The lookup surface the rest of the server uses:
 //
 //   searchCards(query, limit)   → Card[]        (name search, for the panel)
 //   getCard(identifier)         → Card | null   (by Riftcodex id or exact name)
@@ -8,8 +7,8 @@
 //   resolveByDisplayName(name)  → { card, suggestions }
 //   resolveImagePath(identifier)→ '/cards/<id>' | null
 //
-// Riftcodex (https://riftcodex.com) is a free, no-auth, Scryfall-style REST API
-// for Riot's Riftbound TCG. Two things make this safe to run at a live event:
+// Riftcodex (https://riftcodex.com) is a free, no-auth REST API for Riot's
+// Riftbound TCG (fuzzy name lookup, full-text search, card images). Two things make this safe to run at a live event:
 //
 //   1. Everything is cached to disk (.cache/cards/*.json, .cache/img/*.png).
 //      Once a card has been looked up it never needs the network again, so a
@@ -38,15 +37,17 @@ const HEADERS = {
   'Accept':     'application/json',
 }
 
-// Riftbound has no format-legality axis like Pauper — every printed card is
-// fair game — so "format" here is just a label for the UI/logs. Set to the set
-// you're covering, or leave as the game name.
+// Riftbound has no per-format card legality to check, so "format" is just a
+// label for the UI and logs. Set it to the set you're covering, or leave it as
+// the game name.
 const FORMAT = process.env.RIFTBOUND_SET ?? 'Riftbound'
 export function getFormat() { return FORMAT }
 
 // ── Domains ──────────────────────────────────────────────────────
-// Riftbound's six domains, each with a broadcast accent colour. Used to tint
-// nameplates and card chips the way WUBRG does in MTG overlays.
+// Riftbound's six domains, each with a broadcast accent colour, used to tint
+// each side of the overlays and the panel's card chips. A card in two domains
+// is labelled "Multi". Keep in step with overlays/riftbound.js and the panel's
+// control/src/riftbound.jsx.
 export const DOMAIN_COLORS = {
   Fury:      '#e2413a',   // red
   Body:      '#f0902f',   // orange
@@ -54,6 +55,7 @@ export const DOMAIN_COLORS = {
   Calm:      '#3fae5a',   // green
   Chaos:     '#9b5cc7',   // purple
   Order:     '#e0b23a',   // yellow
+  Multi:     '#d4af37',   // gold
   Colorless: '#9aa3ab',
 }
 
@@ -146,18 +148,11 @@ function normalizeCard(raw) {
     orientation: raw.orientation ?? 'portrait',   // battlefields are 'landscape'
 
     text:        raw.text?.plain ?? '',
-    oracleText:  raw.text?.plain ?? '',       // alias, some UI reads oracleText
     flavour:     raw.text?.flavour ?? '',
     artist:      raw.media?.artist ?? '',
 
     imageUrl:    raw.id ? `/cards/${raw.id}` : null,   // served from our cache
     _img:        raw.media?.image_url ?? null,
-
-    // ── MTG-shape compatibility (so decklist/DeckSummary code keeps working) ──
-    manaCost:    '',
-    cmc:         attr.energy ?? 0,
-    colors:      domains,
-    color:       domainLabel(domains),
   }
 }
 

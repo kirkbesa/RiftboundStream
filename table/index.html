@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <!-- user-scalable=no prevents accidental pinch-zoom mid-game -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Table — MTGStream</title>
+  <title>Table — RiftboundStream</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -181,39 +181,24 @@
       background: rgba(34,197,94,0.28);
     }
 
-    /* Disabled state (counter already at 0) */
-    .counter-btn.dec:disabled {
+    /* Disabled state (counter already at its limit) */
+    .counter-btn:disabled {
       opacity: 0.2;
       cursor: default;
     }
 
-    /* ±5 buttons — deliberately smaller than ±1, which is the tap that
-       happens fifty times a game and must be the easiest target to hit. */
-    .counter-btn.step {
-      width: 62px;
-      height: 62px;
-      font-size: 22px;
-    }
+    /* 8 points — the game is won */
+    .counter-display.goal { color: #fbbf24; }
 
-    /* Life at or below 5 — the number the caster is watching */
-    .counter-display.low { color: #f87171; }
-
-    /* ── Poison / energy rows ──────────────────────────────────── */
-    .extra-counters {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-top: 6px;
-      align-items: center;
-    }
-
-    .extra-row {
+    /* ── Games (Bo3) row ───────────────────────────────────────── */
+    .games-row {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
+      margin-top: 8px;
     }
 
-    .extra-btn {
+    .games-btn {
       width: 38px;
       height: 38px;
       border-radius: 10px;
@@ -226,19 +211,20 @@
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
-    .extra-btn:active  { background: rgba(255,255,255,0.14); }
-    .extra-btn:disabled { opacity: 0.2; cursor: default; }
+    .games-btn:active  { background: rgba(255,255,255,0.14); }
+    .games-btn:disabled { opacity: 0.2; cursor: default; }
 
-    .extra-val {
-      min-width: 58px;
-      text-align: center;
-      font-size: 17px;
-      font-weight: 800;
-      font-variant-numeric: tabular-nums;
+    /* Two circles, filled per game won — same as the matchup overlay. */
+    .games-pips { display: flex; gap: 8px; align-items: center; }
+    .games-pip {
+      width: 18px; height: 18px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.4);
     }
-
-    .extra-row.poison .extra-val { color: #4ade80; }
-    .extra-row.energy .extra-val { color: #facc15; }
+    .games-pip.on { background: #fbbf24; border-color: #fbbf24; }
+    .games-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--muted);
+    }
 
     /* ── Center action buttons ─────────────────────────────────── */
     #center-actions {
@@ -447,15 +433,13 @@
         <div class="player-name" id="p1-name">—</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-        <div class="counter-display" id="p1-counter">20</div>
-        <div class="counter-label">Life</div>
-        <div class="extra-counters" id="p1-extra"></div>
+        <div class="counter-display" id="p1-counter">0</div>
+        <div class="counter-label">Points · race to 8</div>
+        <div class="games-row" id="p1-games"></div>
       </div>
       <div class="counter-buttons">
-        <button class="counter-btn step dec" onclick="adjust(0,'life',-5)">−5</button>
-        <button class="counter-btn dec"      onclick="adjust(0,'life',-1)">−</button>
-        <button class="counter-btn inc"      onclick="adjust(0,'life',+1)">+</button>
-        <button class="counter-btn step inc" onclick="adjust(0,'life',+5)">+5</button>
+        <button class="counter-btn dec" id="p1-dec" onclick="adjust(0,'points',-1)">−</button>
+        <button class="counter-btn inc" id="p1-inc" onclick="adjust(0,'points',+1)">+</button>
       </div>
     </div>
 
@@ -468,7 +452,6 @@
         <button class="play-arrow" id="play-p2" onclick="setOnThePlay('p2')" title="P2 is on the play">▼</button>
       </div>
       <div id="center-actions">
-        <button class="mini-btn" onclick="toggleExtras()" id="extras-btn">Counters</button>
         <button class="mini-btn" onclick="newGame()" id="newgame-btn">New Game</button>
       </div>
     </div>
@@ -480,15 +463,13 @@
         <div class="player-name" id="p2-name">—</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-        <div class="counter-display" id="p2-counter">20</div>
-        <div class="counter-label">Life</div>
-        <div class="extra-counters" id="p2-extra"></div>
+        <div class="counter-display" id="p2-counter">0</div>
+        <div class="counter-label">Points · race to 8</div>
+        <div class="games-row" id="p2-games"></div>
       </div>
       <div class="counter-buttons">
-        <button class="counter-btn step dec" onclick="adjust(1,'life',-5)">−5</button>
-        <button class="counter-btn dec"      onclick="adjust(1,'life',-1)">−</button>
-        <button class="counter-btn inc"      onclick="adjust(1,'life',+1)">+</button>
-        <button class="counter-btn step inc" onclick="adjust(1,'life',+5)">+5</button>
+        <button class="counter-btn dec" id="p2-dec" onclick="adjust(1,'points',-1)">−</button>
+        <button class="counter-btn inc" id="p2-inc" onclick="adjust(1,'points',+1)">+</button>
       </div>
     </div>
 
@@ -498,15 +479,14 @@
     /* ── Local state ─────────────────────────────────────────── */
     let fullState   = null
     let selectedIdx = 0        // which match tab is selected on this page
-    let showExtras  = false    // poison/energy rows hidden until asked for
 
     // Optimistic display values, so a tap lights up before the round-trip.
     // `pending` counts in-flight writes per player: while any are outstanding
     // we keep showing the local value, and once they all land we snap back to
     // whatever the server says. That keeps taps instant WITHOUT the old bug of
-    // never re-syncing — a life correction typed in the control panel now
+    // never re-syncing — a points correction made in the control panel now
     // reaches the table instead of being ignored forever.
-    const shown   = [null, null]   // { life, poison, energy } | null = uninitialised
+    const shown   = [null, null]   // { points, gameScore } | null = uninitialised
     const pending = [0, 0]
 
     /* ── DOM refs ───────────────────────────────────────────── */
@@ -517,10 +497,8 @@
     const tabRow    = document.getElementById('tab-row')
     const connBadge = document.getElementById('conn-badge')
 
-    const COUNTER_META = {
-      poison: { glyph: '☠', label: 'Poison' },
-      energy: { glyph: '⚡', label: 'Energy' },
-    }
+    // Same limits the server clamps to (COUNTERS in server/state.js).
+    const LIMITS = { points: 8, gameScore: 2 }
 
     /* ── Tap handler ─────────────────────────────────────────── */
     // Sends a DELTA, never an absolute total: two fast taps must both count,
@@ -529,12 +507,12 @@
       const cur = shown[playerIndex]
       if (!cur) return
 
-      const next = cur[counter] + delta
-      // Life may go negative (and showing that on stream is fine); the others can't.
-      cur[counter] = counter === 'life' ? next : Math.max(0, next)
+      const next = Math.max(0, Math.min(LIMITS[counter], cur[counter] + delta))
+      if (next === cur[counter]) return   // already at 0 / the limit
+      cur[counter] = next
 
       renderCounters()
-      bump(playerIndex === 0 ? p1Counter : p2Counter)
+      if (counter === 'points') bump(playerIndex === 0 ? p1Counter : p2Counter)
 
       pending[playerIndex]++
       fetch(`/api/state/matches/${selectedIdx}/player/${playerIndex}/counter/${counter}`, {
@@ -570,15 +548,9 @@
       }).catch(() => {})
     }
 
-    function toggleExtras() {
-      showExtras = !showExtras
-      document.getElementById('extras-btn').classList.toggle('active', showExtras)
-      if (fullState) render(fullState)
-    }
-
     function newGame() {
-      // Life back to 20 for the next game of the match. Deliberately not
-      // confirmed — it's cheap to undo by tapping, and a modal at the table
+      // Both players' points back to 0 for the next game of the match; games
+      // won carry over. Deliberately not confirmed — it's cheap to undo by tapping, and a modal at the table
       // during a round is worse than an accidental reset.
       fetch(`/api/state/matches/${selectedIdx}/new-game`, { method: 'POST' })
         .then(() => { shown[0] = shown[1] = null })   // force resync from server
@@ -591,43 +563,43 @@
         const v = shown[i]
         if (!v) continue
         const el = i === 0 ? p1Counter : p2Counter
-        el.textContent = v.life
-        el.classList.toggle('low', v.life <= 5)
+        el.textContent = v.points
+        el.classList.toggle('goal', v.points >= LIMITS.points)
+        document.getElementById(`p${i + 1}-dec`).disabled = v.points <= 0
+        document.getElementById(`p${i + 1}-inc`).disabled = v.points >= LIMITS.points
 
-        const extra = document.getElementById(`p${i + 1}-extra`)
-        extra.innerHTML = ''
-        for (const key of ['poison', 'energy']) {
-          // A counter shows once it's in play, or whenever the operator has
-          // opened the Counters tray to set one.
-          if (v[key] === 0 && !showExtras) continue
-          extra.appendChild(counterRow(i, key, v[key]))
-        }
+        document.getElementById(`p${i + 1}-games`).replaceChildren(...gamesRow(i, v.gameScore))
       }
     }
 
-    function counterRow(playerIndex, key, value) {
-      const { glyph, label } = COUNTER_META[key]
-      const row = document.createElement('div')
-      row.className = `extra-row ${key}`
-
+    // Bo3 games won: − ○○ + — smaller than the points buttons, since it changes
+    // once a game rather than every turn.
+    function gamesRow(playerIndex, value) {
       const dec = document.createElement('button')
-      dec.className = 'extra-btn'
+      dec.className = 'games-btn'
       dec.textContent = '−'
-      dec.disabled = value === 0
-      dec.onclick = () => adjust(playerIndex, key, -1)
+      dec.disabled = value <= 0
+      dec.onclick = () => adjust(playerIndex, 'gameScore', -1)
 
-      const val = document.createElement('span')
-      val.className = 'extra-val'
-      val.textContent = `${glyph} ${value}`
-      val.title = label
+      const pips = document.createElement('div')
+      pips.className = 'games-pips'
+      for (let g = 0; g < LIMITS.gameScore; g++) {
+        const pip = document.createElement('span')
+        pip.className = 'games-pip' + (g < value ? ' on' : '')
+        pips.appendChild(pip)
+      }
+      const label = document.createElement('span')
+      label.className = 'games-label'
+      label.textContent = 'Games'
+      pips.appendChild(label)
 
       const inc = document.createElement('button')
-      inc.className = 'extra-btn'
+      inc.className = 'games-btn'
       inc.textContent = '+'
-      inc.onclick = () => adjust(playerIndex, key, +1)
+      inc.disabled = value >= LIMITS.gameScore
+      inc.onclick = () => adjust(playerIndex, 'gameScore', +1)
 
-      row.append(dec, val, inc)
-      return row
+      return [dec, pips, inc]
     }
 
     function renderOnThePlay(slot) {
@@ -672,9 +644,8 @@
       for (const i of [0, 1]) {
         if (shown[i] === null || pending[i] === 0) {
           shown[i] = {
-            life:   players[i].life   ?? 20,
-            poison: players[i].poison ?? 0,
-            energy: players[i].energy ?? 0,
+            points:    players[i].points    ?? 0,
+            gameScore: players[i].gameScore ?? 0,
           }
         }
       }

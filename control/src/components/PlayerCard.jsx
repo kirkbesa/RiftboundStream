@@ -3,7 +3,7 @@ import { api } from '../store.js'
 import DecklistImport from './DecklistImport.jsx'
 import DeckSummary from './DeckSummary.jsx'
 import CardPicker from './CardPicker.jsx'
-import { identityOptions } from '../mtg.jsx'
+import { identityOptions } from '../riftbound.jsx'
 
 const POINTS_TO_WIN = 8
 const GAMES_TO_WIN  = 2
@@ -75,9 +75,9 @@ export default function PlayerCard({ player: p, mi, pi }) {
           headline counter and drives the top-center track on the overlay. */}
       <div className="points">
         <div className={`points-val${pts >= POINTS_TO_WIN ? ' win' : ''}`}>
-          <button className="life-btn" onClick={() => bump('points', -1)}>−1</button>
+          <button className="step-btn" onClick={() => bump('points', -1)}>−1</button>
           <div className="points-num"><b>{pts}</b><span>/ {POINTS_TO_WIN}</span></div>
-          <button className="life-btn" onClick={() => bump('points', +1)}>+1</button>
+          <button className="step-btn" onClick={() => bump('points', +1)}>+1</button>
         </div>
         <div className="points-track">
           {Array.from({ length: POINTS_TO_WIN }, (_, i) => (

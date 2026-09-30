@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo, useRef } from 'react'
 import { api, useServerEvent } from '../store.js'
 import DeckSummary from './DeckSummary.jsx'
-import { mainDeckCount } from '../mtg.jsx'
+import { mainDeckCount } from '../riftbound.jsx'
 
 const FORMAT_LABEL = {
   csv:  'CSV',
@@ -36,7 +36,7 @@ export default function Roster({ state, editIndex }) {
   }, []))
 
   // Parse-only round trip: shows what the file actually contains before we
-  // commit to a multi-minute Scryfall import.
+  // commit to a multi-minute card import.
   async function loadContent(content) {
     setError('')
     setText(content)
@@ -197,7 +197,7 @@ export default function Roster({ state, editIndex }) {
               <button className="btn" onClick={() => setImp(false)}>Cancel</button>
             )}
             <span className="muted">
-              Cards are fetched from Scryfall once and cached — do this before you go live.
+              Cards are fetched from Riftcodex once and cached — do this before you go live.
             </span>
           </div>
         </div>

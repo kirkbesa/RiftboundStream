@@ -30,7 +30,7 @@
 // Sideboard detection, in priority order:
 //   1. An explicit section header ("Sideboard", "SB:", "// Sideboard")
 //   2. A per-line "SB:" prefix
-//   3. Failing both, the first blank line after the mainboard has started
+//   3. Failing both, the first blank line after the main deck has started
 //
 // (3) is a heuristic and only fires when the list has no labels at all —
 // otherwise a list that merely separates its sections (or groups units/spells)
@@ -53,8 +53,8 @@ const RE_HEADER = new RegExp(
   `^(?:\\/\\/\\s*)?(${SECTION_HEADERS.map(([, re]) => `(${re.source})`).join('|')})\\b\\s*(?::\\s*(.*))?$`,
   'i',
 )
-// Headers we skip entirely — Arena-style exports emit these but they aren't cards.
-const RE_SKIP_HEADER = /^(\/\/\s*)?(companion|commander|about|name)\b\s*:?\s*$/i
+// Headers we skip entirely — deckbuilder exports emit these but they aren't cards.
+const RE_SKIP_HEADER = /^(\/\/\s*)?(about|name|format)\b\s*:?\s*$/i
 const RE_SB_PREFIX   = /^SB:\s*/i
 
 // "3 Arise! (OGN) 146" / "3x Arise! [OGN]" / "3 Arise!"
@@ -129,8 +129,6 @@ const toRow = (count, card) => ({
   domainColor: card.domainColor,
   energy:     card.energy,
   might:      card.might,
-  cmc:        card.cmc,       // = energy; kept so the deck-curve sort works
-  manaCost:   '',             // Riftbound has no mana string
   rarity:     card.rarity,
   imageUrl:   `/cards/${card.identifier}`,
 })
@@ -188,7 +186,7 @@ function takeChampion(legend, main) {
 //     unresolved }
 //
 // `main` never includes the chosen champion: a legal deck is main (39) +
-// champion (1) = 40. Count it that way (mainDeckCount in the panel's mtg.jsx).
+// champion (1) = 40. Count it that way (mainDeckCount in the panel's riftbound.jsx).
 //
 // Every name in the list is fetched in ONE batched request before anything is
 // resolved. Doing a request per card instead gets a bulk roster import

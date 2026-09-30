@@ -51,13 +51,13 @@ app.get('/cards/:id', (req, res) => {
 // ── Overlay pages ────────────────────────────────────────────────
 // Serve every overlay at its exact documented URL, with NO redirect.
 //
-// express.static would answer /overlays/nameplate with a 301 to
-// /overlays/nameplate/ and only then serve index.html. OBS browser sources
+// express.static would answer /overlays/matchup with a 301 to
+// /overlays/matchup/ and only then serve index.html. OBS browser sources
 // don't always follow that redirect cleanly, which shows up as a blank source.
 // These routes MUST be registered before the static mount — the previous build
 // declared a few of them after it, so static redirected first and they never ran.
 const OVERLAYS = [
-  'matchup', 'nameplate', 'cardviewer', 'decklist', 'deckreveal',
+  'matchup', 'cardviewer', 'decklist', 'deckreveal',
   'standings', 'timer', 'broadcaster', 'panelists', 'bracket',
 ]
 
@@ -66,7 +66,7 @@ for (const name of OVERLAYS) {
     res.sendFile(join(ROOT, 'overlays', name, 'index.html')))
 }
 
-// Shared assets (ws.js, mtg.js) and anything else under overlays/
+// Shared assets (ws.js, riftbound.js, theme.css) and anything else under overlays/
 app.use('/overlays', express.static(join(ROOT, 'overlays')))
 
 // Commentator dashboard — accessible from any device on the local network
@@ -101,8 +101,9 @@ app.get('/api/cards/:identifier', async (req, res) => {
 })
 
 // ── Decklist import ──────────────────────────────────────────────
-// Takes raw pasted text (Arena / MTGO / plain), resolves every line against
-// Scryfall, and returns a fully-resolved decklist ready to store in state.
+// Takes raw pasted text (labelled sections or a plain "count name" list),
+// resolves every line against Riftcodex, and returns a fully-resolved decklist
+// ready to store in state.
 // Resolving here rather than in the overlays means each card is fetched once,
 // at import time, instead of on every render.
 app.post('/api/decklist/resolve-text', async (req, res) => {
@@ -129,7 +130,7 @@ app.post('/api/decklist/resolve-text', async (req, res) => {
 // rate-limited API, which takes a while. So we respond immediately and stream
 // progress over the WebSocket instead of holding the request open — a silent
 // two-minute spinner is indistinguishable from a hang.
-// Parse-only, no Scryfall calls. Lets the panel show "detected CSV — 64 players"
+// Parse-only, no card lookups. Lets the panel show "detected CSV — 64 players"
 // and surface a bad file BEFORE committing to a multi-minute import.
 app.post('/api/roster/preview', (req, res) => {
   const { text } = req.body ?? {}
@@ -306,9 +307,9 @@ app.post('/api/state/matches/:mi/swap-players', (req, res) => {
   res.json(getLiveState())
 })
 
-// ── Counters (life / poison / energy) ────────────────────────────
-// Accepts EITHER { delta: -3 } or { value: 17 }. The table page always sends
-// `delta`, because a life tap is inherently relative: two rapid taps that each
+// ── Counters (points / gameScore) ────────────────────────────────
+// Accepts EITHER { delta: -1 } or { value: 5 }. The table page always sends
+// `delta`, because a point tap is inherently relative: two rapid taps that each
 // sent an absolute total computed from the same stale base would lose one.
 app.patch('/api/state/matches/:mi/player/:pi/counter/:counter', (req, res) => {
   const mi      = Number(req.params.mi)
@@ -323,7 +324,7 @@ app.patch('/api/state/matches/:mi/player/:pi/counter/:counter', (req, res) => {
   res.json(getLiveState())
 })
 
-// Next game of a Bo3 — resets life/poison/energy and the play/draw marker,
+// Next game of a Bo3 — resets both players' points and the play/draw marker,
 // keeping names, decklists, records and the game score.
 app.post('/api/state/matches/:mi/new-game', (req, res) => {
   newGameAt(Number(req.params.mi))
@@ -439,7 +440,7 @@ server.listen(PORT, () => {
   console.log(`   (Share your local IP on port ${PORT} with commentators on the same network)\n`)
 
   // ── Auto-save intervals ─────────────────────────────────────────
-  // Short: every 5 min — overwrites AutoSave-MTGBroadcast_latest.json
+  // Short: every 5 min — overwrites AutoSave-RiftboundBroadcast_latest.json
   // Long:  every 30 min — new timestamped file, never overwritten
   const SHORT_MS = 5  * 60 * 1000
   const LONG_MS  = 30 * 60 * 1000

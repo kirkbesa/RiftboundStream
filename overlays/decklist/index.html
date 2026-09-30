@@ -50,7 +50,7 @@
       border-bottom: 1px solid rgba(255,255,255,0.08);
       flex-shrink: 0;
       border-top: 3px solid transparent;
-      border-image: var(--plph-gradient) 1;
+      border-image: var(--brand-gradient) 1;
       border-radius: 12px 12px 0 0;
     }
 
@@ -95,7 +95,7 @@
       padding: 3px 20px 3px;
     }
 
-    /* Text-only rows: quantity then name. No art, no mana pips — at sidebar
+    /* Text-only rows: quantity then name. No art, no energy badges — at sidebar
        width a 28px thumbnail reads as noise, and the list is scanned, not
        studied. Count leads because that's what a caster is looking for. */
     .card-row {
@@ -115,8 +115,8 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* A full playset — the cards that define the deck */
-    .card-count.max { color: var(--plph-gold); }
+    /* The maximum 3 copies — the cards that define the deck */
+    .card-count.max { color: var(--brand-gold); }
 
     .card-name {
       flex: 1;
@@ -144,7 +144,7 @@
   </div>
 
   <script src="/overlays/ws.js"></script>
-  <script src="/overlays/mtg.js"></script>
+  <script src="/overlays/riftbound.js"></script>
   <script>
     // The panel's max-height in CSS. Measuring panel.offsetHeight instead would
     // be circular now that the height follows the content — it'd report the
@@ -156,8 +156,7 @@
     }
 
     // Only scales down, and only when a list is too long to fit the cap. A
-    // normal 60+15 list renders at 1:1 and the panel simply ends where the
-    // cards end.
+    // short list renders at 1:1 and the panel simply ends where the cards end.
     function fitContent() {
       const scrollArea = document.getElementById('scroll-area')
       const header     = document.getElementById('header')
@@ -169,7 +168,7 @@
       }
     }
 
-    // Decklists arrive from state already resolved (name, cost, type, image),
+    // Decklists arrive from state already resolved (name, energy, type, image),
     // so rendering is pure DOM work — no fetch, nothing to await, and nothing
     // that can fail if the venue network drops mid-match.
     function render(state) {
@@ -197,20 +196,34 @@
         return
       }
 
-      const main = deck.main ?? []
-      const side = deck.side ?? []
-      const mainCount = main.reduce((n, c) => n + c.count, 0)
+      const main  = deck.main  ?? []
+      const runes = deck.runes ?? []
+      const side  = deck.side  ?? []
       const sideCount = side.reduce((n, c) => n + c.count, 0)
 
       document.getElementById('header-count').textContent =
-        `${mainCount} cards${sideCount ? ` · ${sideCount} sideboard` : ''}`
+        `${RB.mainCount(deck)} cards${sideCount ? ` · ${sideCount} sideboard` : ''}`
 
-      for (const [type, rows] of MTG.groupByType(main)) {
+      // Legend, Champion and Battlefields lead, one line each — they're the
+      // deck's identity, and what the matchup overlay is showing.
+      const identity = [
+        deck.legend   && { count: 1, ...deck.legend },
+        deck.champion && { count: 1, ...deck.champion },
+        ...(deck.battlefields ?? []).map(c => ({ count: 1, ...c })),
+      ].filter(Boolean)
+      if (identity.length > 0) {
+        scrollArea.appendChild(buildGroup('Legend · Champion · Battlefields', identity, { plain: true, color: RB.typeColor('Legend'), sort: false }))
+      }
+
+      for (const [type, rows] of RB.groupByType(main)) {
         scrollArea.appendChild(buildGroup(type, rows))
       }
 
+      if (runes.length > 0) {
+        scrollArea.appendChild(buildGroup('Runes', runes, { plain: true, color: RB.typeColor('Rune') }))
+      }
       if (side.length > 0) {
-        scrollArea.appendChild(buildGroup('Sideboard', side, { sideboard: true }))
+        scrollArea.appendChild(buildGroup('Sideboard', side, { plain: true }))
       }
 
       const unresolved = deck.unresolved ?? []
@@ -242,25 +255,25 @@
       fitContent()
     }
 
-    function buildGroup(type, rows, { sideboard = false } = {}) {
+    // `plain` groups (identity, Runes, Sideboard) take their label as given
+    // rather than pluralising a card type.
+    function buildGroup(type, rows, { plain = false, color = null, sort = true } = {}) {
       const groupEl = document.createElement('div')
       groupEl.className = 'type-group'
 
       const label = document.createElement('div')
       label.className = 'type-label'
       const groupCount = rows.reduce((n, c) => n + c.count, 0)
-      label.textContent = sideboard
-        ? `Sideboard  (${groupCount})`
-        : `${MTG.plural(type, groupCount)}  (${groupCount})`
-      if (!sideboard) label.style.color = MTG.typeColor(type)
+      label.textContent = plain
+        ? `${type}  (${groupCount})`
+        : `${RB.plural(type, groupCount)}  (${groupCount})`
+      const tint = color ?? (plain ? null : RB.typeColor(type))
+      if (tint) label.style.color = tint
       groupEl.appendChild(label)
 
-      // Highest count first, then by mana cost — how a player would read
-      // their own list: the 4-ofs that define the deck at the top.
-      const sorted = [...rows].sort((a, b) =>
-        b.count - a.count || (a.cmc ?? 0) - (b.cmc ?? 0) || a.name.localeCompare(b.name)
-      )
-      for (const row of sorted) groupEl.appendChild(buildRow(row))
+      // Highest count first, then by energy — how a player would read their
+      // own list: the 3-ofs that define the deck at the top.
+      for (const row of sort ? RB.sortRows(rows) : rows) groupEl.appendChild(buildRow(row))
       return groupEl
     }
 
@@ -269,13 +282,13 @@
       row.className = 'card-row'
 
       const count = document.createElement('div')
-      // 4 is a playset — the deck's core. Worth flagging, as the old build did.
-      count.className = `card-count${card.count >= 4 ? ' max' : ''}`
+      // The maximum copies — the deck's core. Worth flagging.
+      count.className = `card-count${card.count >= RB.MAX_COPIES ? ' max' : ''}`
       count.textContent = card.count
 
       const name = document.createElement('div')
       name.className = 'card-name'
-      name.textContent = card.name
+      name.textContent = RB.displayName(card.name)
 
       row.append(count, name)
       return row

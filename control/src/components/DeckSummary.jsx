@@ -1,6 +1,6 @@
 import React from 'react'
 import { api } from '../store.js'
-import { ManaCost, groupByType, typeColor, plural, sortDeckRows, mainDeckCount } from '../mtg.jsx'
+import { EnergyBadge, groupByType, typeColor, plural, sortDeckRows, mainDeckCount } from '../riftbound.jsx'
 
 // Compact read-only view of a stored decklist. Clicking a card zooms it on the
 // card-viewer overlay, which makes this the fastest path from "caster mentions
@@ -56,7 +56,7 @@ export default function DeckSummary({ deck }) {
                 <button key={r.identifier} className="ds-row" onClick={() => zoom(r.identifier)} title="Zoom on stream">
                   <span className="ds-count">{r.count}</span>
                   <span className="ds-name">{r.name}</span>
-                  <ManaCost cost={r.manaCost} size={12} />
+                  <EnergyBadge energy={r.energy} size={11} />
                 </button>
               ))}
             </div>
@@ -86,7 +86,7 @@ export default function DeckSummary({ deck }) {
               <button key={r.identifier} className="ds-row" onClick={() => zoom(r.identifier)} title="Zoom on stream">
                 <span className="ds-count">{r.count}</span>
                 <span className="ds-name">{r.name}</span>
-                <ManaCost cost={r.manaCost} size={12} />
+                <EnergyBadge energy={r.energy} size={11} />
               </button>
             ))}
           </div>

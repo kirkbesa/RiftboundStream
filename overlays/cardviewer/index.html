@@ -15,12 +15,11 @@
       font-family: 'Segoe UI', system-ui, sans-serif;
     }
 
-    /* Centered in the nameplate overlay's reserved left column (see
-       overlays/nameplate: #card-preview-slot, width 320px) — vertically
-       centered between the top and bottom nameplate bars. Just the card —
-       the printed card already carries its own name, mana cost and type
-       line, so an info pill under it was restating what the viewer can
-       plainly read. */
+    /* Pinned to the left edge, vertically centred — over the matchup
+       overlay's left rail. Deck reveal moves its grid right to make room
+       (CV_LEFT / CV_WIDTH there must match). Just the card — the printed
+       card already carries its own name, cost and type, so an info pill
+       under it would restate what the viewer can plainly read. */
     #viewer {
       position: absolute;
       top: 50%;
@@ -49,7 +48,7 @@
        collapsing and popping the layout. */
     #card-placeholder {
       width: 280px;
-      height: 392px;   /* ~5:7, a card's aspect ratio */
+      height: 391px;   /* 744:1039, a card's aspect ratio */
       border-radius: 12px;
       background: rgba(20,20,20,0.88);
       border: 1px solid rgba(255,255,255,0.08);
@@ -64,8 +63,8 @@
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      background: var(--plph-gold-faint);
-      border: 2px solid var(--plph-gold-soft);
+      background: var(--brand-gold-faint);
+      border: 2px solid var(--brand-gold-soft);
     }
   </style>
 </head>

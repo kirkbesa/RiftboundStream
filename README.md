@@ -2,12 +2,11 @@
 
 A local broadcast production tool for **Riftbound** (Riot's TCG) tournaments.
 Card data and images come live from the **[Riftcodex API](https://riftcodex.com)**
-— a free, no-auth, Scryfall-style database — and are cached to disk, so no card
-assets ship with this app.
+— a free, no-auth card database — and are cached to disk, so no card assets ship
+with this app.
 
-Built on the same engine as MTGStream, re-modelled for Riftbound: champions
-(Legend + Champion Unit), battlefields, a race-to-8 points track, and a
-Bo3 game score.
+Built around how a Riftbound match reads on stream: each player's Legend and
+Champion, their battlefield, a race-to-8 points track, and a Bo3 game score.
 
 ---
 
@@ -45,25 +44,31 @@ All at 1920×1080, transparent background:
 
 | Overlay      | URL                                        | What it is |
 |--------------|--------------------------------------------|------------|
-| **Matchup**  | http://localhost:3001/overlays/matchup     | **The full-frame layout** — both players' name, champion, video slot, battlefield + Bo3 circles, and card showcase, with the race-to-8 track up top. The centre is transparent for the table feed. |
-| Card Viewer  | http://localhost:3001/overlays/cardviewer  | Full card zoom (from the Cards tab) |
+| **Matchup**  | http://localhost:3001/overlays/matchup     | **The full-frame layout** — per player: name, Legend + Champion art, cam slot, battlefield + Bo3 circles, and card showcase, with the race-to-8 track up top. The centre is transparent for the table feed. |
+| Card Viewer  | http://localhost:3001/overlays/cardviewer  | Full card zoom (from the Cards tab or the commentator page) |
+| Decklist     | http://localhost:3001/overlays/decklist    | One player's list as a text sidebar, right of screen |
+| Deck Reveal  | http://localhost:3001/overlays/deckreveal  | Full-screen deck reveal — card grid, energy curve, type + domain breakdown |
 | Standings    | http://localhost:3001/overlays/standings   | Top-8 standings table |
 | Timer        | http://localhost:3001/overlays/timer       | Round timer |
 | Broadcaster  | http://localhost:3001/overlays/broadcaster | Caster lower-third |
+| Panelists    | http://localhost:3001/overlays/panelists   | Panel / desk lower-third |
 | Bracket      | http://localhost:3001/overlays/bracket     | Top-8 single-elim bracket |
+
+`OBS/RiftboundStream-scene-collection.json` has all of these set up as one
+scene: in OBS, **Scene Collection → Import**, pick the file, then select it from
+the Scene Collection menu.
 
 The **Matchup** overlay reserves a `P1 Cam` / `P2 Cam` box in each rail — put your
 player video sources *behind* the overlay and line them up with those cut-outs.
+No player cams? Switch **Player cams** off in the panel's On-air bar and the
+rails close up.
 
 Share these over the venue LAN with commentators (the panel header shows the IP):
 
 | Page           | Who for                          |
 |----------------|----------------------------------|
-| `/commentator` | Casters — decklists, card zoom   |
-| `/table`       | Players & judge                  |
-
-> Legacy MTG-era overlays (`nameplate`, `decklist`, `deckreveal`) are still
-> present but superseded by `matchup`; they haven't been re-skinned for Riftbound.
+| `/commentator` | Casters — both decklists, points, games, card zoom |
+| `/table`       | Players & judge — tap points and games from the table |
 
 ---
 
@@ -72,9 +77,13 @@ Share these over the venue LAN with commentators (the panel header shows the IP)
 On the **Match tab**, for each player:
 
 - **Name / handle / pronouns / record / deck name** — typed directly.
-- **Legend** — search and pick the player's Legend card.
+- **Legend** — the player's Legend card.
 - **Champion Unit** — the champion unit that pairs with the Legend.
-- **Battlefield** — the active battlefield (its art + name + Bo3 circles show on the overlay).
+- **Battlefield** — the active battlefield (the card, its name and the Bo3 circles show on the overlay).
+
+  Once the player has a decklist, these three are dropdowns of the cards in
+  their deck — switching battlefield between games is one click — with
+  **Search all cards…** for anything else.
 - **Showcase** — feature any single card in the player's rail.
 - **Points** — the race-to-8 win condition (the top-center track). `+1 / −1`,
   clamped to 8. Adjustable from the panel or the table page.
@@ -94,9 +103,13 @@ decklists, records and the game score. **Reset Match** clears the slot entirely.
 Paste a decklist per player (Match tab → **Import**), or bulk-import a whole
 tournament field on the **Roster tab** (CSV / JSON / text — format auto-detected).
 Every card line is resolved against Riftcodex before it goes live and shown for
-review. See `samples/IMPORT-FORMAT.md`.
+review.
 
-Decklist lines are `<count> <card name>` — e.g. `3 Rengar - Pridestalker`.
+Decklists can label their sections — `Legend:`, `Champion:`, `Main Deck:`,
+`Battlefields:`, `Runes:`, `Sideboard:` — or be a plain `<count> <card name>`
+list, which is sorted out by card type. Either way the deck's Legend, Champion
+and first Battlefield are set on the player when they're seated. See
+`samples/IMPORT-FORMAT.md`.
 
 ---
 
@@ -110,8 +123,8 @@ RIFTBOUND_API=https://api.riftcodex.com   # point at a mirror if needed
 RIFTBOUND_SET=Riftbound                    # label shown in the panel/logs
 ```
 
-Any Scryfall-style Riftbound API with `/cards/name?fuzzy=` and `/cards/{id}`
-endpoints can be dropped in by editing `server/riftbound.js`.
+Any Riftbound card API with `/cards/name?fuzzy=` and `/cards/{id}` endpoints
+can be dropped in by editing `server/riftbound.js`.
 
 ---
 
@@ -132,16 +145,19 @@ RiftboundStream/
 ├── .cache/         ← Riftcodex card + image cache (auto-created)
 ├── events/         ← Saved event files (auto-created)
 ├── autosave/       ← 5-min rolling + 30-min timestamped auto-saves
-├── samples/        ← Example roster imports
+├── samples/        ← Roster import spec + templates
 ├── server/
 │   ├── riftbound.js  Riftcodex client, rate limiting, disk cache
-│   ├── decklist.js   Decklist parsing → resolved rows
+│   ├── decklist.js   Decklist parsing → Legend / Champion / main / Battlefields / Runes / side
 │   ├── roster.js     Bulk tournament import
 │   ├── state.js      Broadcast state + event persistence
 │   └── index.js      HTTP + WebSocket
 ├── overlays/       ← OBS overlay pages (matchup is the main one)
+├── commentator/    ← Casters' page
+├── table/          ← Players' & judge's scoring page
 ├── control/        ← Control panel source (React)
 ├── dist/control/   ← Built control panel — run `npm run build` after editing
+├── OBS/            ← Importable OBS scene collection
 ├── start.command   ← Mac launcher
 └── start.bat       ← Windows launcher
 ```

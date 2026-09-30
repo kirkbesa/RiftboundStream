@@ -1,7 +1,7 @@
 // server/roster.js — bulk import of a whole tournament field.
 //
-// Rosters come out of registration platforms (Melee, EventLink, Companion,
-// a Google Form…), and every one of them exports something different. So rather
+// Rosters come out of registration platforms (Melee, a Google Form, a
+// spreadsheet…), and every one of them exports something different. So rather
 // than force a bespoke format, the importer sniffs the content and accepts all
 // three shapes a roster realistically arrives in:
 //
@@ -32,7 +32,7 @@ const FIELD_ALIASES = {
   handle:    ['handle', 'twitter', 'social', 'username', 'discord'],
   pronouns:  ['pronoun', 'pronouns'],
   decklist:  ['decklist', 'deck list', 'cards', 'maindeck', 'main'],
-  mainboard: ['mainboard', 'maindeck', 'main', 'decklist'],
+  mainDeck:  ['maindeck', 'mainboard', 'main', 'decklist'],
   sideboard: ['sideboard', 'side', 'sb'],
 }
 
@@ -46,8 +46,8 @@ function pick(obj, aliases) {
   return undefined
 }
 
-// A decklist field may be a plain string ("4 Lightning Bolt\n…") or a structured
-// array ([{count, name}] or ["4 Lightning Bolt"]). Normalise to decklist text so
+// A decklist field may be a plain string ("3 Arise!\n…") or a structured
+// array ([{count, name}] or ["3 Arise!"]). Normalise to decklist text so
 // there's exactly one downstream parser.
 function toDeckText(value) {
   if (value == null) return ''
@@ -74,7 +74,7 @@ function entryFromObject(obj) {
   if (!name) return null
 
   // A row may carry one combined decklist, or separate main/side columns.
-  const main = toDeckText(pick(obj, FIELD_ALIASES.mainboard) ?? pick(obj, FIELD_ALIASES.decklist))
+  const main = toDeckText(pick(obj, FIELD_ALIASES.mainDeck) ?? pick(obj, FIELD_ALIASES.decklist))
   const side = toDeckText(pick(obj, FIELD_ALIASES.sideboard))
 
   // The decklist parser already understands a "Sideboard" header, so when the
@@ -223,8 +223,8 @@ export function parseRoster(content) {
 }
 
 // ── Resolution ───────────────────────────────────────────────────
-// Sequential, not parallel: scryfall.js already serialises requests behind a
-// 100ms queue, so firing 64 decks at once just builds a long queue with no
+// Sequential, not parallel: riftbound.js already serialises requests behind a
+// rate-limited queue, so firing 64 decks at once just builds a long queue with no
 // speedup — and would make progress reporting meaningless. onProgress drives
 // the import UI, because a large field takes minutes and a silent spinner is
 // indistinguishable from a hang.

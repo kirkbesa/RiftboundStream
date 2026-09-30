@@ -37,8 +37,8 @@
       gap: 16px;
       background: linear-gradient(180deg, rgba(9,12,20,0.92) 0%, rgba(9,12,20,0.72) 100%);
     }
-    .rail.left  { left: 0;  border-right: 3px solid transparent; border-image: var(--rb-accent, var(--plph-gradient)) 1; }
-    .rail.right { right: 0; border-left:  3px solid transparent; border-image: var(--rb-accent, var(--plph-gradient)) 1; }
+    .rail.left  { left: 0;  border-right: 3px solid transparent; border-image: var(--rb-accent, var(--brand-gradient)) 1; }
+    .rail.right { right: 0; border-left:  3px solid transparent; border-image: var(--rb-accent, var(--brand-gradient)) 1; }
 
     /* Player accent — driven per side from the legend's domain colour. */
     .rail.left  { --side: var(--p1, #fbbf24); }
@@ -76,8 +76,8 @@
        The whole box is card art, cropped to the character's face, with the
        Legend and Champion names on a scrim along the bottom.
 
-       Riftcodex serves only the full card image (no art-only crop like
-       Scryfall's art_crop), so the crop is done here. Riftbound art is
+       Riftcodex serves only the full card image (no art-only crop), so the
+       crop is done here. Riftbound art is
        full-bleed, but the frame's cost / might / domain icons sit in the top
        corners and down the left edge — zooming the card to --champ-zoom of the
        box width pushes those out of frame. --champ-y then slides the window

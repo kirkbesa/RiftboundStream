@@ -1,10 +1,10 @@
 {
-    "name": "MTGStream",
-    "current_scene": "MTGStream",
-    "current_program_scene": "MTGStream",
+    "name": "RiftboundStream",
+    "current_scene": "RiftboundStream",
+    "current_program_scene": "RiftboundStream",
     "scene_order": [
         {
-            "name": "MTGStream"
+            "name": "RiftboundStream"
         }
     ],
     "sources": [
@@ -26,12 +26,12 @@
             "deinterlace_field_order": 0,
             "monitoring_type": 0,
             "private_settings": {},
-            "name": "Nameplate",
+            "name": "Matchup",
             "uuid": "ba142638-5e6f-4bfe-805d-54ac13e58f33",
             "id": "browser_source",
             "versioned_id": "browser_source",
             "settings": {
-                "url": "http://localhost:3001/overlays/nameplate",
+                "url": "http://localhost:3001/overlays/matchup",
                 "width": 1920,
                 "height": 1080,
                 "fps_custom": false,
@@ -332,7 +332,7 @@
             "deinterlace_field_order": 0,
             "monitoring_type": 0,
             "private_settings": {},
-            "name": "MTGStream",
+            "name": "RiftboundStream",
             "uuid": "001e1490-8a5b-4ee2-b91a-006fc86dfc98",
             "id": "scene",
             "versioned_id": "scene",
@@ -341,7 +341,7 @@
                 "id_counter": 9,
                 "items": [
                     {
-                        "name": "Nameplate",
+                        "name": "Matchup",
                         "source_uuid": "ba142638-5e6f-4bfe-805d-54ac13e58f33",
                         "visible": true,
                         "locked": false,

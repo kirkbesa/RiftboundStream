@@ -17,15 +17,15 @@ thing to diff an export against:
 
 ## The fields
 
-The same four fields in both formats. Only the player's name is required.
+Only the player's name is required.
 
-| Field       | Required | Contents                                   |
-|-------------|----------|--------------------------------------------|
-| Player      | **yes**  | Player's name. A row with no name is skipped. |
-| Deck        | no       | Archetype — "Jund Wildfire", "Familiars".  |
-| Decklist    | no       | Mainboard. One card per line.              |
-| Sideboard   | no       | Sideboard. One card per line.              |
-| Pronouns    | no       | Shown on the nameplate.                    |
+| Field       | Required | Contents                                         |
+|-------------|----------|--------------------------------------------------|
+| Player      | **yes**  | Player's name. A row with no name is skipped.    |
+| Deck        | no       | Archetype — "Azir", "Master Yi". Defaults to the Legend's champion. |
+| Decklist    | no       | The deck: Legend, Champion, main deck, Battlefields, Runes. One card per line. |
+| Sideboard   | no       | Sideboard. One card per line.                    |
+| Pronouns    | no       | Shown on the overlays with the player's name.    |
 
 **Leave placement out.** There is a `Place` field, but it's only for re-importing
 an already-finished tournament. At a live event nobody has a placement yet, and
@@ -39,12 +39,18 @@ Standard CSV. **Header row required.** One row per player.
 
 ```csv
 Player,Deck,Decklist,Sideboard
-Plachy,Jund Wildfire,"4 Writhing Chrysalis
-4 Kuldotha Rebirth
-19 Mountain","2 Gorilla Shaman
-3 Duress"
-Favetta,White Weenie,"4 Thraben Charm
-20 Plains","2 Dust to Dust"
+Kestrel,Azir,"Legend: Azir, Emperor of the Sands
+Champion: Azir, Sovereign
+Main Deck:
+3 Arise!
+3 Guards!
+Battlefields:
+1 Hall of Legends
+1 Seat of Power
+1 Trifarian War Camp
+Runes:
+6 Calm Rune
+6 Order Rune","2 Wind Wall"
 ```
 
 The decklist is a normal multi-line cell: wrapped in double quotes, real
@@ -61,7 +67,7 @@ accepts several spellings:
 |-------------|----------------------------------------------------|
 | `Player`    | `Player Name`, `Name`, `Full Name`, `Display Name` |
 | `Deck`      | `Deck Name`, `Archetype`                           |
-| `Decklist`  | `Mainboard`, `Maindeck`, `Main`                    |
+| `Decklist`  | `Main Deck`, `Maindeck`, `Main`                    |
 | `Sideboard` | `Side`, `SB`                                       |
 | `Pronouns`  | `Pronoun`                                          |
 
@@ -80,10 +86,10 @@ The decklist may be **a string** (exactly the text a CSV cell would hold):
 ```json
 [
   {
-    "name": "Plachy",
-    "deck": "Jund Wildfire",
-    "decklist": "4 Writhing Chrysalis\n19 Mountain",
-    "sideboard": "2 Gorilla Shaman\n3 Duress"
+    "name": "Kestrel",
+    "deck": "Azir",
+    "decklist": "Legend: Azir, Emperor of the Sands\nChampion: Azir, Sovereign\nMain Deck:\n3 Arise!\n3 Guards!\nBattlefields:\n1 Hall of Legends\n1 Seat of Power\n1 Trifarian War Camp\nRunes:\n6 Calm Rune\n6 Order Rune",
+    "sideboard": "2 Wind Wall"
   }
 ]
 ```
@@ -94,20 +100,23 @@ already stores decks as records:
 ```json
 [
   {
-    "name": "Favetta",
-    "deck": "White Weenie",
-    "mainboard": [
-      { "count": 4, "name": "Thraben Charm" },
-      { "count": 20, "name": "Plains" }
+    "name": "Marlowe",
+    "deck": "Master Yi",
+    "decklist": [
+      { "count": 1, "name": "Master Yi, Wuju Bladesman" },
+      { "count": 1, "name": "Master Yi, Honed" },
+      { "count": 3, "name": "Lonely Poro" },
+      { "count": 1, "name": "Vilemaw's Lair" },
+      { "count": 6, "name": "Body Rune" }
     ],
     "sideboard": [
-      { "count": 2, "name": "Dust to Dust" }
+      { "count": 3, "name": "Akshan, Mischievous" }
     ]
   }
 ]
 ```
 
-A plain array of strings (`["4 Thraben Charm", "20 Plains"]`) works too.
+A plain array of strings (`["3 Lonely Poro", "6 Body Rune"]`) works too.
 
 ### Key names
 
@@ -127,55 +136,84 @@ In a structured decklist, each card's count may be `count`, `quantity`, `qty` or
 
 ---
 
+## Deck layout
+
+A Riftbound deck is a **Legend**, a chosen **Champion** unit, a **main deck**
+(40 cards counting the Champion), three **Battlefields**, twelve **Runes**, and
+an optional **sideboard** of up to 8.
+
+The clearest export labels each section, the way deckbuilders do:
+
+```
+Legend: Azir, Emperor of the Sands
+Champion: Azir, Sovereign
+Main Deck:
+3 Arise!
+3 B.F. Sword
+Battlefields:
+1 Hall of Legends
+1 Seat of Power
+1 Trifarian War Camp
+Runes:
+6 Calm Rune
+6 Order Rune
+Sideboard:
+2 Wind Wall
+```
+
+A label can sit on its own line (`Legend:`) or carry its card inline
+(`Legend: Azir, Emperor of the Sands`). Accepted labels: `Legend`, `Champion`
+(or `Champion Unit`), `Main Deck` (or `Main`, `Deck`), `Battlefields`, `Runes`
+(or `Rune Pool`), `Sideboard`.
+
+**Unlabelled lists work too.** A plain `count name` list is sorted out by card
+type: the Legend, Battlefields and Runes are recognised as what they are. The
+Champion is the one thing type can't tell apart from any other unit — without a
+`Champion` label, the importer picks the main-deck unit that shares the
+Legend's champion name (an Azir deck's "Azir, Sovereign"). Label it if you can.
+
+The Legend, Champion and first Battlefield become the player's cards on the
+matchup overlay as soon as they're seated.
+
+---
+
 ## Card lines
 
-Each line of a decklist is `<count> <name>`:
+Each card line is `<count> <name>`:
 
 ```
-4 Lightning Bolt
-19 Mountain
+3 Arise!
+6 Calm Rune
 ```
 
-Also accepted, so an Arena or MTGO export can be passed through untouched:
+Also accepted:
 
-- `4x Lightning Bolt` — the `x` is optional
-- `4 Lightning Bolt (M10) 146` — set code and collector number are ignored
-- `SB: 2 Pyroblast` — per-line sideboard prefix
+- `3x Arise!` — the `x` is optional
+- `3 Arise! (OGN) 146` — set code and collector number are ignored
+- `SB: 2 Wind Wall` — per-line sideboard prefix
 - `// comment` and blank lines — ignored
 
 ### Sideboard
 
 Either give it its own `Sideboard` field, **or** put it inside the decklist under
-a `Sideboard` line:
-
-```
-4 Lightning Bolt
-19 Mountain
-Sideboard
-2 Pyroblast
-```
-
-Both work. Don't do both at once.
+a `Sideboard` line — not both.
 
 ### Card names
 
-Names are resolved against [Scryfall](https://scryfall.com), which is forgiving
-about punctuation, accents and casing. Two notes:
-
-- **Split cards**: `Fire // Ice` (either half alone also resolves).
-- **Double-faced cards**: the front face name is enough — `Delver of Secrets`.
+Names are resolved against [Riftcodex](https://riftcodex.com), which is
+forgiving about punctuation and casing — `Azir, Sovereign` and
+`Azir - Sovereign` both resolve.
 
 Matching is fuzzy, which is what makes messy player-submitted lists importable —
 but it also means a badly mangled line can resolve to the *wrong* card rather
 than failing outright. **Export the decklist exactly as the player submitted it.**
-A well-meaning cleanup pass (stripping punctuation, title-casing) is more likely
-to turn a good name into a subtly wrong one than to help. Anything that can't be
+A well-meaning cleanup pass (stripping punctuation, re-casing) is more likely to
+turn a good name into a subtly wrong one than to help. Anything that can't be
 resolved at all is reported with suggestions, not silently dropped.
 
 ---
 
 ## Encoding
 
-**UTF-8.** Card names contain accents (`Jötun Grunt`, `Séance`) and so do player
-names; Latin-1 will mangle them into names that can't be resolved. Either line
-ending (LF or CRLF) is fine.
+**UTF-8.** Player names can contain accents, and Latin-1 will mangle them.
+Either line ending (LF or CRLF) is fine.

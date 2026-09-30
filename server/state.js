@@ -143,10 +143,7 @@ function migrate(s) {
   }
 
   if (!s.overlay) s.overlay = defaultOverlay()
-  // Older saves called this nameplateVisible; keep whichever is present.
-  if (s.overlay.matchupVisible == null) {
-    s.overlay.matchupVisible = s.overlay.nameplateVisible ?? true
-  }
+  if (s.overlay.matchupVisible    == null) s.overlay.matchupVisible    = true
   if (s.overlay.playerCamsVisible == null) s.overlay.playerCamsVisible = true
   if (s.overlay.cardZoom          === undefined) s.overlay.cardZoom    = null
   if (Array.isArray(s.overlay.decklistActive)) {

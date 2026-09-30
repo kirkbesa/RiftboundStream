@@ -1,4 +1,4 @@
-/* control/src/styles.css — VibesStream MTG control panel */
+/* control/src/styles.css — RiftboundStream control panel */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -257,33 +257,14 @@ select option:disabled { color: var(--muted); }
 .pc-score b { font-size: 16px; color: var(--text); min-width: 16px; text-align: center; }
 .pc-name { font-size: 18px; font-weight: 700; }
 
-/* ── Counters ───────────────────────────────────────────── */
-.counters { display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
-            padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.25); }
-
-.life { display: flex; align-items: center; gap: 5px; }
-.life-btn {
+/* ── Points −1 / +1 ─────────────────────────────────────── */
+.step-btn {
   width: 34px; height: 34px; border-radius: 7px;
   border: 1px solid var(--border); background: rgba(255,255,255,0.06);
   color: var(--text); font-size: 13px; font-weight: 700;
   cursor: pointer; font-family: inherit;
 }
-.life-btn:hover { background: rgba(255,255,255,0.15); }
-.life-val {
-  width: 68px; text-align: center;
-  font-size: 26px; font-weight: 800; padding: 2px;
-  font-variant-numeric: tabular-nums;
-}
-.life.low .life-val { color: #f87171; }
-
-.minor { display: flex; flex-direction: column; gap: 5px; }
-.minor-row { display: flex; align-items: center; gap: 6px;
-             font-size: 11px; font-weight: 700; color: var(--muted); }
-.minor-row b { min-width: 16px; text-align: center; font-size: 14px; }
-.minor-row.active.poison { color: #4ade80; }
-.minor-row.active.energy { color: #facc15; }
-.minor-row.active b      { color: inherit; }
-.minor-row > span:first-child { min-width: 62px; }
+.step-btn:hover { background: rgba(255,255,255,0.15); }
 
 /* ── Race to 8 points ───────────────────────────────────── */
 .points { display: flex; flex-direction: column; gap: 8px;
@@ -345,14 +326,6 @@ select option:disabled { color: var(--muted); }
   border: 1px solid rgba(212,175,55,0.5); font-weight: 800; line-height: 1; flex-shrink: 0;
 }
 
-/* ── Mana pips ──────────────────────────────────────────── */
-.mana { display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0; }
-.pip {
-  display: inline-flex; align-items: center; justify-content: center;
-  border-radius: 50%; color: #0b0b0b; font-weight: 800; line-height: 1;
-  box-shadow: inset 0 -1px 2px rgba(0,0,0,0.35); flex-shrink: 0;
-}
-
 /* ── Decklist ───────────────────────────────────────────── */
 .deck-block { border-top: 1px solid var(--border); padding-top: 10px; }
 .deck-head { display: flex; align-items: center; justify-content: space-between;
@@ -388,14 +361,11 @@ select option:disabled { color: var(--muted); }
 .rev-title { font-size: 10px; font-weight: 800; color: var(--muted);
              text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
 .rev-row { display: flex; align-items: center; gap: 8px; padding: 2px 0; font-size: 13px; }
-.rev-row.illegal { color: var(--gold); }
 .rev-count { min-width: 18px; font-weight: 700; color: var(--muted);
              font-variant-numeric: tabular-nums; }
 .rev-name  { min-width: 160px; }
 .rev-type  { color: var(--muted); font-size: 11px; }
 .rev-sugg  { color: var(--gold); font-size: 11px; }
-.rev-flag  { color: var(--gold); font-size: 10px; font-weight: 700;
-             text-transform: uppercase; }
 
 /* ── Card search ────────────────────────────────────────── */
 .search-row { margin-bottom: 12px; }

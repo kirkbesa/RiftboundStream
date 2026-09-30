@@ -39,7 +39,7 @@
       background: rgba(8, 8, 8, 0.88);
       backdrop-filter: blur(12px);
       border-bottom: 3px solid transparent;
-      border-image: var(--plph-gradient) 1;
+      border-image: var(--brand-gradient) 1;
       height: 136px;
       padding: 0 48px;
       gap: 0;
@@ -57,7 +57,7 @@
     .deck-label {
       font-size: 11px;
       font-weight: 700;
-      color: var(--plph-gold-dim);
+      color: var(--brand-gold-dim);
       text-transform: uppercase;
       letter-spacing: 2.5px;
       margin-bottom: 8px;
@@ -103,7 +103,7 @@
     .player-record {
       font-size: 30px;
       font-weight: 800;
-      color: var(--plph-gold);
+      color: var(--brand-gold);
       line-height: 1;
       letter-spacing: -0.5px;
       margin-top: 8px;
@@ -141,8 +141,8 @@
     }
 
     /* ── Card grid area ───────────────────────────────── */
-    /* Type groups are packed into columns (see planLayout) — a 60-card deck is
-       mostly 4-ofs, so stacking every group in one column leaves the right half
+    /* Type groups are packed into columns (see planLayout) — a 40-card deck is
+       mostly 3-ofs, so stacking every group in one column leaves the right half
        of the frame empty and forces the cards small. */
     .grid-area {
       flex: 1;
@@ -254,8 +254,8 @@
     }
 
     .qty-label.max {
-      color: var(--plph-gold);
-      border-color: var(--plph-gold-soft);
+      color: var(--brand-gold);
+      border-color: var(--brand-gold-soft);
     }
 
     /* loading / empty */
@@ -278,7 +278,7 @@
       </div>
       <div class="charts-block" id="charts-block">
         <div class="mini-chart">
-          <div class="mini-chart-label">Mana Curve</div>
+          <div class="mini-chart-label">Energy Curve</div>
           <div id="chart-fish"></div>
         </div>
         <div class="mini-chart">
@@ -286,7 +286,7 @@
           <div id="chart-type"></div>
         </div>
         <div class="mini-chart">
-          <div class="mini-chart-label">By Color</div>
+          <div class="mini-chart-label">By Domain</div>
           <div id="chart-color"></div>
         </div>
       </div>
@@ -306,39 +306,27 @@
   </div>
 
   <script src="/overlays/ws.js"></script>
-  <script src="/overlays/mtg.js"></script>
+  <script src="/overlays/riftbound.js"></script>
   <script>
     const reveal   = document.getElementById('reveal')
     const gridArea = document.getElementById('grid-area')
 
-    // Pie-slice colours keyed by the `color` label the server derives from
-    // Scryfall's WUBRG array.
-    const COLOR_LABELS = {
-      'White':      MTG.COLORS.W,
-      'Blue':       MTG.COLORS.U,
-      'Black':      MTG.COLORS.B,
-      'Red':        MTG.COLORS.R,
-      'Green':      MTG.COLORS.G,
-      'Multicolor': MTG.COLORS.Multicolor,
-      'Colorless':  MTG.COLORS.Colorless,
-    }
-
-    // Mana curve. Buckets come from MTG.curve(), which excludes lands (a land
-    // has no mana cost, and dumping 17 of them into the 0-drop bucket would
-    // make every curve look identical) and collapses everything at 7+.
-    function buildManaCurve(rows) {
-      const buckets = MTG.curve(rows)
+    // Energy curve. Buckets come from RB.curve(), which collapses everything
+    // at 7+. It's drawn over the main deck plus the chosen champion — the 40
+    // cards actually drawn from — so runes and battlefields stay out of it.
+    function buildEnergyCurve(rows) {
+      const buckets = RB.curve(rows)
 
       // Trim trailing empty buckets so a deck topping out at 3 doesn't render
       // four blank columns, but always show at least 0–4 for a readable shape.
-      let maxCmc = 4
+      let maxEnergy = 4
       for (let i = 7; i >= 0; i--) {
-        if (buckets[i] > 0) { maxCmc = Math.max(maxCmc, i); break }
+        if (buckets[i] > 0) { maxEnergy = Math.max(maxEnergy, i); break }
       }
       if (buckets.every(b => b === 0)) return ''
 
       const W = 214, H = 82
-      const numBars  = maxCmc + 1
+      const numBars  = maxEnergy + 1
       const maxVal   = Math.max(...buckets, 1)
       const barSlot  = Math.floor((W - 4) / numBars)
       const barW     = Math.max(6, barSlot - 2)
@@ -346,11 +334,11 @@
       const baseY    = H - 16
 
       let content = ''
-      for (let cmc = 0; cmc <= maxCmc; cmc++) {
-        const count = buckets[cmc]
+      for (let e = 0; e <= maxEnergy; e++) {
+        const count = buckets[e]
         const barH  = count > 0 ? Math.max(2, Math.round((count / maxVal) * barAreaH)) : 0
-        const barX  = 2 + cmc * barSlot + Math.floor((barSlot - barW) / 2)
-        const label = cmc === 7 ? '7+' : String(cmc)
+        const barX  = 2 + e * barSlot + Math.floor((barSlot - barW) / 2)
+        const label = e === 7 ? '7+' : String(e)
 
         if (barH > 0) {
           const barY = baseY - barH
@@ -421,19 +409,20 @@
     }
 
     function buildCharts(rows) {
-      document.getElementById('chart-fish').innerHTML  = buildManaCurve(rows)
-      document.getElementById('chart-type').innerHTML  = buildPieSVG(rows, 'type',  MTG.TYPE_COLORS)
-      document.getElementById('chart-color').innerHTML = buildPieSVG(rows, 'color', COLOR_LABELS)
+      document.getElementById('chart-fish').innerHTML  = buildEnergyCurve(rows)
+      document.getElementById('chart-type').innerHTML  = buildPieSVG(rows, 'type',   RB.TYPE_COLORS)
+      document.getElementById('chart-color').innerHTML = buildPieSVG(rows, 'domain', RB.DOMAIN_COLORS)
     }
 
-    // Card viewer geometry — must stay in sync with overlays/cardviewer/index.html
-    const CV_RIGHT  = 80   // right: 80px
+    // Card viewer geometry — must stay in sync with overlays/cardviewer/index.html,
+    // which zooms a card at the LEFT edge. While one is up, the grid moves over.
+    const CV_LEFT   = 20   // left: 20px
     const CV_WIDTH  = 280  // card image width
-    const CV_GUTTER = 24   // breathing room between grid and card viewer
+    const CV_GUTTER = 24   // breathing room between card viewer and grid
 
-    const GRID_PAD_L         = 48
-    const GRID_PAD_R_DEFAULT = 48
-    const GRID_PAD_R_ZOOM    = CV_RIGHT + CV_WIDTH + CV_GUTTER  // 384px
+    const GRID_PAD_R         = 48
+    const GRID_PAD_L_DEFAULT = 48
+    const GRID_PAD_L_ZOOM    = CV_LEFT + CV_WIDTH + CV_GUTTER  // 324px
 
     // Fixed vertical budget: 1080 - 136 (info bar) - 52 (grid padding top+bottom) = 892px
     const AVAIL_H = 892
@@ -455,23 +444,32 @@
 
     const COL_GAP    = 24
     const MAX_COLS   = 3
-    // Scryfall card scans are 488×680.
-    const CARD_RATIO = 488 / 680
+    // Riftcodex card images are 744×1039 portrait.
+    const CARD_RATIO = 744 / 1039
+
+    // Groups whose cards are landscape (Battlefields). Their tile is a portrait
+    // tile turned on its side: cardH wide, cardW tall.
+    const LANDSCAPE = new WeakSet()
+    const tileSize = (group, cardW, cardH) => LANDSCAPE.has(group) ? [cardH, cardW] : [cardW, cardH]
+
+    // Section labels that are shown as given, not pluralised as a card type.
+    const PLAIN_LABELS = new Set(['Legend & Champion', 'Battlefields', 'Runes', 'Sideboard'])
 
     // Pack groups into `cols` columns, always adding the next group to the
     // shortest column, and report the height of the tallest one. Returns null
     // if any single group is too tall to ever fit.
     function packColumns(groups, cardH, colW, cols) {
-      const cardW  = Math.round(cardH * CARD_RATIO)
-      const perRow = Math.max(1, Math.floor((colW + CARD_GAP) / (cardW + CARD_GAP)))
+      const cardW = Math.round(cardH * CARD_RATIO)
 
       const heights = new Array(cols).fill(0)
       const buckets = Array.from({ length: cols }, () => [])
 
       for (const g of groups) {
+        const [tileW, tileH] = tileSize(g, cardW, cardH)
+        const perRow = Math.max(1, Math.floor((colW + CARD_GAP) / (tileW + CARD_GAP)))
         const rows = Math.ceil(g.length / perRow)
         const h = HEADER_H + HEADER_GAP
-                + rows * (cardH + LABEL_OVERHEAD)
+                + rows * (tileH + LABEL_OVERHEAD)
                 + Math.max(0, rows - 1) * ROW_GAP
 
         let target = 0
@@ -490,11 +488,11 @@
     // depends on the deck, so we just search it.
     function planLayout(groups, cardZoomActive) {
       if (groups.length === 0) {
-        return { w: 120, h: 168, padR: GRID_PAD_R_DEFAULT, buckets: [] }
+        return { w: 120, h: 168, padL: GRID_PAD_L_DEFAULT, buckets: [] }
       }
 
-      const padR   = cardZoomActive ? GRID_PAD_R_ZOOM : GRID_PAD_R_DEFAULT
-      const availW = 1920 - GRID_PAD_L - padR
+      const padL   = cardZoomActive ? GRID_PAD_L_ZOOM : GRID_PAD_L_DEFAULT
+      const availW = 1920 - padL - GRID_PAD_R
 
       let best = null
 
@@ -515,14 +513,14 @@
         }
 
         if (bestH > 0 && (!best || bestH > best.h)) {
-          best = { h: bestH, w: Math.round(bestH * CARD_RATIO), padR, colW, buckets: bestBuckets }
+          best = { h: bestH, w: Math.round(bestH * CARD_RATIO), padL, colW, buckets: bestBuckets }
         }
       }
 
       // Nothing fit even at the minimum size — fall back to one column, smallest cards.
       if (!best) {
         const { buckets } = packColumns(groups, 80, availW, 1)
-        best = { h: 80, w: Math.round(80 * CARD_RATIO), padR, colW: availW, buckets }
+        best = { h: 80, w: Math.round(80 * CARD_RATIO), padL, colW: availW, buckets }
       }
 
       return best
@@ -548,17 +546,30 @@
       if (metaEl) metaEl.style.display = (handle || pronouns) ? '' : 'none'
     }
 
-    function buildGrid(main, side, cardZoomActive) {
-      const groups = MTG.groupByType(main)
+    function buildGrid(deck, cardZoomActive) {
+      const one = (card) => ({ count: 1, ...card })
+      const groups = []
 
-      // Sideboard cards keep their own section rather than being folded into
-      // the mainboard's type groups — same "one labeled block, not resorted
-      // into Creature/Instant/etc." treatment as the decklist overlay.
-      if (side.length > 0) groups.push(['Sideboard', side])
+      // The deck's identity leads: Legend + chosen Champion, then its three
+      // Battlefields (landscape tiles).
+      const identity = [deck.legend, deck.champion].filter(Boolean).map(one)
+      if (identity.length) groups.push(['Legend & Champion', identity])
+      const battlefields = (deck.battlefields ?? []).map(one)
+      if (battlefields.length) {
+        LANDSCAPE.add(battlefields)
+        groups.push(['Battlefields', battlefields])
+      }
+
+      groups.push(...RB.groupByType(deck.main ?? []))
+
+      // Runes and sideboard keep their own labelled blocks rather than being
+      // folded into the main deck's type groups, same as the decklist overlay.
+      if (deck.runes?.length) groups.push(['Runes', deck.runes])
+      if (deck.side?.length)  groups.push(['Sideboard', deck.side])
 
       // planLayout packs the groups into columns and hands back which groups
       // landed in which column, so we render straight from its decision.
-      const { w: cardW, h: cardH, padR, colW, buckets } = planLayout(
+      const { w: cardW, h: cardH, padL, colW, buckets } = planLayout(
         groups.map(([, g]) => g),
         cardZoomActive
       )
@@ -566,7 +577,7 @@
       // Map each group array back to its [typeName, cards] pair.
       const nameOf = new Map(groups.map(([name, g]) => [g, name]))
 
-      gridArea.style.paddingRight = padR + 'px'
+      gridArea.style.paddingLeft = padL + 'px'
       gridArea.innerHTML = ''
 
       const columnEls = buckets.map(() => {
@@ -589,9 +600,10 @@
         groupEl.className = 'type-group'
 
         const groupTotal = cards.reduce((n, c) => n + c.count, 0)
-        // "Sideboard" isn't a card type — MTG.plural would turn it into
-        // "Sideboards" past a count of one, so it skips the pluraliser.
-        const label = typeName === 'Sideboard' ? 'Sideboard' : MTG.plural(typeName, groupTotal)
+        // Section labels like "Sideboard" aren't card types — RB.plural would
+        // turn them into "Sideboards" — so they skip the pluraliser.
+        const label = PLAIN_LABELS.has(typeName) ? typeName : RB.plural(typeName, groupTotal)
+        const [tileW, tileH] = tileSize(cards, cardW, cardH)
         const headerEl = document.createElement('div')
         headerEl.className = 'type-header'
         headerEl.innerHTML =
@@ -603,33 +615,28 @@
         const rowEl = document.createElement('div')
         rowEl.className = 'cards-row'
 
-        const sorted = [...cards].sort((a, b) =>
-          b.count - a.count || (a.cmc ?? 0) - (b.cmc ?? 0) || a.name.localeCompare(b.name)
-        )
-
-        for (const card of sorted) {
+        for (const card of RB.sortRows(cards)) {
           const tile = document.createElement('div')
           tile.className = 'card-tile'
-          tile.style.width = cardW + 'px'
+          tile.style.width = tileW + 'px'
 
           const makePlaceholder = () => {
             const ph = document.createElement('div')
             ph.className    = 'placeholder'
-            ph.style.width  = cardW + 'px'
-            ph.style.height = cardH + 'px'
+            ph.style.width  = tileW + 'px'
+            ph.style.height = tileH + 'px'
             ph.textContent  = '◆'
             return ph
           }
 
           if (card.imageUrl) {
             const img = document.createElement('img')
-            img.width  = cardW
-            img.height = cardH
-            img.style.width     = cardW + 'px'
-            img.style.height    = cardH + 'px'
-            // Scryfall images are full, untrimmed card scans at a fixed 488×680.
-            // `cover` keeps the frame square if the tile ratio drifts a pixel;
-            // `fill` (which the old trimmed WebPs used) would visibly stretch it.
+            img.width  = tileW
+            img.height = tileH
+            img.style.width     = tileW + 'px'
+            img.style.height    = tileH + 'px'
+            // Full card images at a fixed ratio. `cover` keeps the frame square
+            // if the tile ratio drifts a pixel, where `fill` would stretch it.
             img.style.objectFit = 'cover'
             img.alt     = card.name
             img.loading = 'lazy'
@@ -641,7 +648,7 @@
           }
 
           const label = document.createElement('div')
-          label.className   = `qty-label${card.count >= 4 ? ' max' : ''}`
+          label.className   = `qty-label${card.count >= RB.MAX_COPIES ? ' max' : ''}`
           label.textContent = `×${card.count}`
           tile.appendChild(label)
 
@@ -686,13 +693,14 @@
       }
       lastCardZoom = cardZoomActive
 
-      // Charts (mana curve, type/color breakdown) stay mainboard-only — the
-      // sideboard isn't part of what the deck actually casts game to game —
-      // but the card grid shows both, mainboard then sideboard.
-      const main = player.decklist?.main ?? []
-      const side = player.decklist?.side ?? []
+      // Charts (energy curve, type/domain breakdown) cover the 40 cards the
+      // deck draws from — main deck plus the chosen champion. The sideboard,
+      // runes and battlefields aren't part of that, but the grid shows them all.
+      const deck = player.decklist ?? {}
+      const main = deck.main ?? []
+      const drawn = deck.champion ? [...main, { count: 1, ...deck.champion }] : main
 
-      if (main.length === 0 && side.length === 0) {
+      if (main.length === 0 && !(deck.side?.length)) {
         gridArea.innerHTML = '<div class="grid-empty">No decklist loaded</div>'
         gridBuilt = false
         return
@@ -700,8 +708,8 @@
 
       // Only rebuild the DOM when something structural changed
       if (!gridBuilt || zoomChanged) {
-        buildGrid(main, side, cardZoomActive)
-        buildCharts(main)
+        buildGrid(deck, cardZoomActive)
+        buildCharts(drawn)
         gridBuilt = true
       }
     }

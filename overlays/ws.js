@@ -1,4 +1,4 @@
-// overlays/ws.js — shared WebSocket client for all MTGStream overlays
+// overlays/ws.js — shared WebSocket client for all RiftboundStream overlays
 //
 // Provides:  connectOverlay(onMessage)
 //

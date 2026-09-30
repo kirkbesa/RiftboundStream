@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { api } from '../store.js'
-import { domainColor } from '../mtg.jsx'
+import { domainColor } from '../riftbound.jsx'
 
 // A compact "search Riftcodex → pick one card" control used for a player's
 // Legend, champion Unit, Battlefield and Showcase slots. `value` is a resolved

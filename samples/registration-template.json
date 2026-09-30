@@ -1,35 +1,45 @@
 [
   {
-    "name": "Plachy",
-    "deck": "Jund Wildfire",
-    "decklist": "4 Writhing Chrysalis\n4 Kuldotha Rebirth\n4 Galvanic Blast\n2 Chain Lightning\n19 Mountain",
-    "sideboard": "2 Gorilla Shaman\n3 Duress\n2 Pyroblast"
+    "name": "Kestrel",
+    "deck": "Azir",
+    "decklist": "Legend:\n1 Azir, Emperor of the Sands\nChampion:\n1 Azir, Sovereign\nMain Deck:\n3 Arise!\n3 B.F. Sword\n3 Guards!\n2 Sacred Shears\nBattlefields:\n1 Hall of Legends\n1 Seat of Power\n1 Trifarian War Camp\nRunes:\n6 Calm Rune\n6 Order Rune",
+    "sideboard": "2 Wind Wall\n2 Charm"
   },
   {
-    "name": "Favetta",
-    "deck": "White Weenie",
-    "mainboard": [
-      { "count": 4, "name": "Thraben Charm" },
-      { "count": 4, "name": "Guardians' Pledge" },
-      { "count": 20, "name": "Plains" }
+    "name": "Marlowe",
+    "deck": "Master Yi",
+    "decklist": [
+      { "count": 1, "name": "Master Yi, Wuju Bladesman" },
+      { "count": 1, "name": "Master Yi, Honed" },
+      { "count": 3, "name": "Lonely Poro" },
+      { "count": 3, "name": "Ruin Runner" },
+      { "count": 3, "name": "Charm" },
+      { "count": 1, "name": "Forge of the Fluft" },
+      { "count": 1, "name": "Ravenbloom Conservatory" },
+      { "count": 1, "name": "Vilemaw's Lair" },
+      { "count": 6, "name": "Body Rune" },
+      { "count": 6, "name": "Calm Rune" }
     ],
     "sideboard": [
-      { "count": 2, "name": "Dust to Dust" },
-      { "count": 3, "name": "Standard Bearer" }
+      { "count": 3, "name": "Akshan, Mischievous" }
     ]
   },
   {
-    "name": "Rossi",
-    "deck": "Familiars",
-    "mainboard": [
-      "4 Sea Gate Oracle",
-      "4 Snap",
-      "4 Preordain",
-      "17 Island"
+    "name": "Tamsin",
+    "deck": "Irelia",
+    "decklist": [
+      "1 Irelia, Blade Dancer",
+      "1 Irelia, Fervent",
+      "3 Defiant Dance",
+      "3 Stellacorn Herder",
+      "1 Sunken Temple",
+      "1 Targon's Peak",
+      "1 Zaun Warrens",
+      "6 Calm Rune",
+      "6 Chaos Rune"
     ],
     "sideboard": [
-      "2 Hydroblast",
-      "2 Dispel"
+      "2 Adaptatron"
     ]
   }
 ]
